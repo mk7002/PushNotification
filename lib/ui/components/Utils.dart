@@ -67,13 +67,14 @@ class Utils {
 
   Widget button(String name, VoidCallback? onPressed) {
     return Material(
-      elevation: 8, // Adjust the elevation for shadow depth
-      shadowColor: Colors.black.withOpacity(0.2), // Color of the shadow
+      elevation: 10, // Adjust the elevation for shadow depth
+      shadowColor: Colors.brown.withOpacity(0.7), // Color of the shadow
       borderRadius:
           BorderRadius.circular(10), // Optional: Adjust the border radius
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
+          backgroundColor: Color(0xFF3DDC84).withOpacity(0.4),
           padding: const EdgeInsets.symmetric(
               horizontal: 20, vertical: 15), // Button padding
           shape: RoundedRectangleBorder(
@@ -81,7 +82,10 @@ class Utils {
                 BorderRadius.circular(10), // Optional: Adjust the border radius
           ),
         ),
-        child: Text(name),
+        child: Text(
+          name,
+          style: TextStyle(color: Colors.white),
+        ),
       ),
     );
   }

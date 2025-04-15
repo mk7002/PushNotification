@@ -27,8 +27,11 @@ class _AndroidScreenState extends State<AndroidScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: const Text("Android Push"),
+        backgroundColor: Color(0xFF3DDC84),
+        title: const Text(
+          "Android Push",
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+        ),
       ),
       body: ResponsiveParentWidget(
         tablet: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [

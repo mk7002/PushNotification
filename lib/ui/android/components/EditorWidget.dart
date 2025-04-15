@@ -124,7 +124,7 @@ class _EditorWidgetState extends State<EditorWidget> {
         color: Colors.transparent, // Let child Container's color show through
         child: Container(
           decoration: const BoxDecoration(
-            color: Colors.blueGrey,
+            color: Colors.white,
             borderRadius: BorderRadius.only(
               topRight: Radius.circular(20),
               topLeft: Radius.circular(20),
@@ -194,7 +194,7 @@ class _EditorWidgetState extends State<EditorWidget> {
               children: [
                 _buildButton(
                   label: 'Format JSON',
-                  color: Colors.lightGreen,
+                  color: Colors.red,
                   onPressed: () {
                     _formatJson(_headerController);
                     _formatJson(_bodyController);
@@ -213,7 +213,7 @@ class _EditorWidgetState extends State<EditorWidget> {
                 const SizedBox(width: 24),
                 _buildButton(
                   label: 'Save Template',
-                  color: Colors.grey,
+                  color: Colors.orangeAccent,
                   onPressed: () {
                     if (_formKey.currentState?.validate() ?? false) {
                       Utils().showSaveTitleDialog(

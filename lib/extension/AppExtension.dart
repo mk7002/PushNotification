@@ -34,7 +34,8 @@ extension ResultExtension on Map<String, dynamic> {
 extension AppConfigExtension on Map<String, dynamic> {
   String getProjectId() {
     try {
-      return this[AppConfigType.project_id.name];
+      var id = this[AppConfigType.project_id.name];
+      return id ?? "";
     } catch (e) {
       return "";
     }

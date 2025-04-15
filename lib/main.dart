@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
     return ProviderSetup(
       child: MaterialApp.router(
         routerConfig: globalRouter,
-        title: 'Notify Now v1.0.1',
+        title: 'Notify Now v1.0.4',
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
           useMaterial3: true,

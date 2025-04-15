@@ -29,27 +29,38 @@ class _ImportDataWidgetState extends State<ImportDataWidget> {
     super.dispose();
   }
 
-  void _loadData(_jsonData) {
-    var jsonData = _jsonData;
-    if ((_jsonData as Map<String, dynamic>).getProjectId().isEmpty) {
-      if ((_jsonData).isOldConfig()) {
-        jsonData = _jsonData["serviceAccountJson"];
-        if (_jsonData["payloads"] != null) {
-          _loadTemplateData(_jsonData["payloads"]);
-        }
-      } else {
-        Utils().showMessage('Invalid Json file', error: true);
-        Singleton().provider.setConfigFileLoaded(false);
-        return;
-      }
-    }
+  void _loadData(dynamic _jsonData) {
+    try {
+      var jsonData = _jsonData;
 
-    DataHandler().setAppConfig(jsonData);
-    var data = DataHandler().getAndroidTemplatePayloads();
-    data = data.cast<Map<String, dynamic>>();
-    Singleton().provider.setPayloadList(data);
-    Singleton().provider.setConfigFileLoaded(true);
-    Utils().showMessage('File loaded successfully');
+      final projectId = (_jsonData as Map<String, dynamic>).getProjectId();
+
+      if (projectId?.isEmpty ?? true) {
+        var data = _jsonData as Map<String, dynamic>;
+        if (data.isOldConfig()) {
+          jsonData = data["serviceAccountJson"];
+          if (data["payloads"] != null) {
+            _loadTemplateData(data["payloads"]);
+          }
+        } else {
+          Utils().showMessage('Invalid Json file', error: true);
+          Singleton().provider.setConfigFileLoaded(false);
+          return;
+        }
+      }
+
+      DataHandler().setAppConfig(jsonData);
+
+      var data = DataHandler().getAndroidTemplatePayloads();
+      data = data.cast<Map<String, dynamic>>();
+      Singleton().provider.setPayloadList(data);
+      Singleton().provider.setConfigFileLoaded(true);
+      Utils().showMessage('File loaded successfully');
+    } catch (e, stack) {
+      print("❌ Error: $e");
+      print("🪵 Stack: $stack");
+      Utils().showMessage('Unexpected error occurred', error: true);
+    }
   }
 
   void _loadTemplateData(jsonData) {
@@ -142,7 +153,6 @@ class _ImportDataWidgetState extends State<ImportDataWidget> {
       // Decode the JSON data
       if (fileContent.isNotEmpty) {
         var jsonData = jsonDecode(fileContent);
-        print("object $jsonData");
         return jsonData;
       } else {
         Utils().showMessage('File content is Empty', error: true);
