@@ -1,8 +1,7 @@
-import 'dart:convert';
-
-import 'package:pushapp/Singleton/Singleton.dart';
 import 'package:pushapp/extension/AppExtension.dart';
+import 'package:pushapp/ui/components/Utils.dart';
 
+import '../Singleton/Singleton.dart';
 import '../storage/SharedPrefs.dart';
 
 class DataHandler {
@@ -15,43 +14,112 @@ class DataHandler {
   }
 
   Map<String, dynamic> appConfig = {};
+  List<Map<String, dynamic>> _androidTemplatePayload = [];
   String? _url;
-  String? _headers;
-  String? _body;
 
   void init() {
     var data = SharedPrefs().getConfigData();
-    if (data != null) {
+    if (data != null && data.getProjectId().isNotEmpty) {
       appConfig = data;
+      Singleton().provider.setConfigFileLoaded(true);
+    } else {
+      if (data != null && data.isOldConfig()) {
+        Utils().showMessage("Please load new config", error: true);
+      } else
+        Singleton().provider.setConfigFileLoaded(false);
     }
   }
 
-  T? getAppConfigData<T>(AppConfigType type) {
-    var data = appConfig[type.name];
-    if (data != null) {
-      if (T == List<Map<String, dynamic>>) {
-        // Handle list of maps, e.g., List<Map<String, dynamic>>
-        return (data as List<dynamic>)
-            .map((item) => item as Map<String, dynamic>)
-            .toList() as T;
-      } else if (T == List<String>) {
-        // Handle list of strings
-        return data.cast<String>() as T;
-      } else if (data is Map<String, dynamic>) {
-        // Handle map data types
-        return data as T?;
-      } else if (T == Map<String, String>) {
-        // Handle map data types
+  List<String> getFirebaseScopes() {
+    return [
+      "https://www.googleapis.com/auth/userinfo.email",
+      "https://www.googleapis.com/auth/firebase.database",
+      "https://www.googleapis.com/auth/firebase.messaging"
+    ];
+  }
 
-        return (data as Map<String, dynamic>)
-                .map((key, value) => MapEntry(key as String, value.toString()))
-            as T;
-      } else {
-        // Handle other types
-        return data as T?;
-      }
+  List<Map<String, dynamic>> getAndroidTemplatePayloads() {
+    _androidTemplatePayload =
+        SharedPrefs().updateOrGetAndroidTemplatePayloads() ??
+            _getDefaultAndroidPayload();
+    return _androidTemplatePayload;
+  }
+
+  void saveAndroidTemplatePayloadList(List<Map<String, dynamic>> _newList) {
+    var oldPayload = getAndroidTemplatePayloads();
+    oldPayload.addAll(_newList);
+    _androidTemplatePayload = oldPayload;
+    SharedPrefs()
+        .updateOrGetAndroidTemplatePayloads(payloads: _androidTemplatePayload);
+    Singleton()
+        .provider
+        .setPayloadList(DataHandler().getAndroidTemplatePayloads());
+  }
+
+  void saveAndroidTemplatePayload(Map<String, dynamic> _newPayload) {
+    var oldPayload = getAndroidTemplatePayloads();
+    oldPayload.add(_newPayload);
+    _androidTemplatePayload = oldPayload;
+    SharedPrefs()
+        .updateOrGetAndroidTemplatePayloads(payloads: _androidTemplatePayload);
+    Singleton()
+        .provider
+        .setPayloadList(DataHandler().getAndroidTemplatePayloads());
+  }
+
+  void deleteAndroidTemplatePayload(
+      int index, Map<String, dynamic> payloadToDelete) {
+    bool? isAdmin = payloadToDelete["isDefaultPayload"];
+    if (isAdmin != null && isAdmin) return;
+    try {
+      // Get current list
+      final currentPayloads = getAndroidTemplatePayloads();
+      currentPayloads.removeAt(index);
+
+      // Update the shared instance and shared preferences
+      _androidTemplatePayload = currentPayloads;
+      SharedPrefs().updateOrGetAndroidTemplatePayloads(
+          payloads: _androidTemplatePayload);
+
+      // Notify provider with updated list
+      Singleton().provider.setPayloadList(_androidTemplatePayload);
+    } catch (e) {
+      print("error $e");
     }
-    return null;
+  }
+
+  List<Map<String, dynamic>> _getDefaultAndroidPayload() {
+    return [
+      {
+        "name": "Sample Payload 1",
+        "isDefaultPayload": true,
+        "headers": {},
+        "token": "token",
+        "body": {
+          "message": {
+            "notification": {
+              "title": "Portugal vs. Denmark",
+              "body": "great match!"
+            }
+          }
+        }
+      },
+      {
+        "name": "Sample Payload 2",
+        "isDefaultPayload": true,
+        "headers": {},
+        "token": "token",
+        "body": {
+          "message": {
+            "data": {"title": "Portugal vs. Denmark", "body": "great match!"}
+          }
+        }
+      }
+    ];
+  }
+
+  T? getAppConfigData<T>() {
+    return appConfig as T;
   }
 
   void setAppConfig(Map<String, dynamic> data) {
@@ -59,37 +127,14 @@ class DataHandler {
     SharedPrefs().setConfigData(appConfig);
   }
 
-  void setUrl(String url) {
-    _url = url;
-  }
-
   String getUrl() {
     _url =
         "https://fcm.googleapis.com/v1/projects/${appConfig.getProjectId()}/messages:send";
     return _url!;
   }
-
-  void setHeaders(headers) {
-    _headers = jsonEncode(headers);
-  }
-
-  dynamic getHeaders() {
-    if (_headers == null) return {};
-    return jsonDecode(_headers!);
-  }
-
-  void setBody(body) {
-    _body = jsonEncode(body);
-  }
-
-  dynamic getBody() {
-    if (_body == null) return {};
-    return jsonDecode(_body!);
-  }
-
-  void passDataToUi() {
-    Singleton().provider.setSelectedPayloadData(_url, _headers, _body);
-  }
 }
 
-enum AppConfigType { serviceAccountJson, scopes, project_id, payloads }
+enum AppConfigType {
+  project_id
+//  serviceAccountJson, scopes, , payloads
+}

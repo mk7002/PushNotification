@@ -1,15 +1,15 @@
 import 'dart:convert';
 
 import 'package:pushapp/data/DataHandler.dart';
-import 'package:pushapp/provider/AppProvider.dart';
+import 'package:pushapp/provider/android_provider.dart';
 
 extension ResultExtension on Map<String, dynamic> {
   ResultType getType() {
-    return this[AppProvider.TYPE] as ResultType;
+    return this[AndroidProvider.TYPE] as ResultType;
   }
 
   String getMessage() {
-    return this[AppProvider.MESSAGE] as String;
+    return this[AndroidProvider.MESSAGE] as String;
   }
 
   bool isInProgress() {
@@ -34,18 +34,21 @@ extension ResultExtension on Map<String, dynamic> {
 extension AppConfigExtension on Map<String, dynamic> {
   String getProjectId() {
     try {
-      return this[AppConfigType.serviceAccountJson.name]
-          [AppConfigType.project_id.name];
+      return this[AppConfigType.project_id.name];
     } catch (e) {
       return "";
     }
+  }
+
+  bool isOldConfig() {
+    return this["serviceAccountJson"] != null;
   }
 }
 
 extension PayLoadData on Map<String, dynamic> {
   String getUrl() {
     try {
-      return this[AppProvider.URL];
+      return this[AndroidProvider.URL];
     } catch (e) {
       return "";
     }
@@ -53,7 +56,7 @@ extension PayLoadData on Map<String, dynamic> {
 
   String token() {
     try {
-      return this[AppProvider.TOKEN];
+      return this[AndroidProvider.TOKEN];
     } catch (e) {
       return "";
     }
@@ -61,8 +64,8 @@ extension PayLoadData on Map<String, dynamic> {
 
   String headers() {
     try {
-      return this[AppProvider.HEADERS] != null
-          ? jsonEncode(this[AppProvider.HEADERS])
+      return this[AndroidProvider.HEADERS] != null
+          ? jsonEncode(this[AndroidProvider.HEADERS])
           : "";
     } catch (e) {
       return "$e";
@@ -71,8 +74,8 @@ extension PayLoadData on Map<String, dynamic> {
 
   String body() {
     try {
-      return this[AppProvider.BODY] != null
-          ? jsonEncode(this[AppProvider.BODY])
+      return this[AndroidProvider.BODY] != null
+          ? jsonEncode(this[AndroidProvider.BODY])
           : "";
     } catch (e) {
       return "$e";

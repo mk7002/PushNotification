@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 
-class AppProvider with ChangeNotifier {
+class AndroidProvider with ChangeNotifier {
   static String TYPE = "type";
   static String MESSAGE = "message";
   static String URL = "url";
@@ -23,13 +23,41 @@ class AppProvider with ChangeNotifier {
 
   List<Map<String, dynamic>> get payloadList => _payloadList;
 
+  List<void Function(Map<String, dynamic>)> callbacks = [];
+
+  bool isConfigFileLoaded = false;
+
   void setResult(ResultType type, String message) {
     _result = {TYPE: type, MESSAGE: message};
     notifyListeners();
   }
 
-  void setSelectedPayloadData(url, headers, body) {
-    _selectedPayloadData = {URL: url, HEADERS: headers, BODY: body};
+  void addListeners(Function(Map<String, dynamic>) listener,
+      {bool remove = false}) {
+    if (remove) {
+      callbacks.remove(listener);
+    } else if (!callbacks.contains(listener)) {
+      callbacks.add(listener);
+    }
+  }
+
+  void setSelectedPayloadData(url, headers, body, token) {
+    _selectedPayloadData = {
+      URL: url,
+      HEADERS: headers,
+      BODY: body,
+      TOKEN: token
+    };
+    if (callbacks.isNotEmpty) {
+      for (var callback in callbacks) {
+        callback(_selectedPayloadData);
+      }
+    }
+    notifyListeners();
+  }
+
+  void setConfigFileLoaded(bool isLoaded) {
+    isConfigFileLoaded = isLoaded;
     notifyListeners();
   }
 

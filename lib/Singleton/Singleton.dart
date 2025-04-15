@@ -1,5 +1,5 @@
 import 'package:provider/provider.dart';
-import 'package:pushapp/provider/AppProvider.dart';
+import 'package:pushapp/provider/android_provider.dart';
 
 class Singleton {
   Singleton._internal();
@@ -10,11 +10,11 @@ class Singleton {
     return _instance;
   }
 
-  late AppProvider _provider;
+  late AndroidProvider _provider;
 
-  AppProvider get provider => _provider;
+  AndroidProvider get provider => _provider;
 
   void setProvider(context) {
-    _provider = Provider.of<AppProvider>(context, listen: false);
+    _provider = Provider.of<AndroidProvider>(context, listen: false);
   }
 }

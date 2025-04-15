@@ -16,14 +16,11 @@ class AccessTokenManager {
     }
 
     // Your logic to obtain a new access token
-    final serviceAccountJson = DataHandler()
-        .getAppConfigData<Map<String, dynamic>>(
-            AppConfigType.serviceAccountJson);
+    final serviceAccountJson =
+        DataHandler().getAppConfigData<Map<String, dynamic>>();
 
-    List<String>? _scopes =
-        DataHandler().getAppConfigData<List<String>>(AppConfigType.scopes);
-    _scopes ?? <String>[];
-    List<String> scopes = _scopes!.map((scope) => scope.toString()).toList();
+    List<String> _scopes = DataHandler().getFirebaseScopes();
+    List<String> scopes = _scopes.map((scope) => scope.toString()).toList();
 
     http.Client client = await auth.clientViaServiceAccount(
       auth.ServiceAccountCredentials.fromJson(serviceAccountJson),
@@ -41,6 +38,7 @@ class AccessTokenManager {
     client.close();
 
     // Store the new access token and its expiry time
+
     await SharedPrefs().setString('access_token', credentials.accessToken.data);
     await SharedPrefs().setExpiry(credentials.accessToken.expiry);
 

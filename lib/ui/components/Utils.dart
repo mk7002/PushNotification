@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class Utils {
   InputDecoration getInputDecoration({String? labelText, String? hintText}) {
@@ -23,5 +24,139 @@ class Utils {
         ),
       ),
     );
+  }
+
+  BoxDecoration shadow({double radius = 20}) {
+    return BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.all(Radius.circular(radius)),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.grey.withOpacity(0.5),
+          spreadRadius: 2,
+          blurRadius: 3,
+          offset: const Offset(0, 3), // changes position of shadow
+        ),
+      ],
+    );
+  }
+
+  BoxDecoration sampleShadow() {
+    bool darkMode = false;
+    var unit = 1;
+    return BoxDecoration(
+      shape: BoxShape.rectangle,
+      borderRadius: BorderRadius.circular(20),
+      color: Colors.white, // Background color
+      boxShadow: [
+        BoxShadow(
+          color: darkMode
+              ? Colors.white.withOpacity(0.2)
+              : Colors.grey[500]!, // Shadow color
+          offset: Offset(-unit / 2, -unit / 2),
+          blurRadius: 1.5 * unit,
+        ),
+        BoxShadow(
+          color: Colors.grey[400]!, // Inner shadow color
+          offset: Offset(unit / 2, unit / 2),
+          blurRadius: 1.5 * unit,
+        ),
+      ],
+    );
+  }
+
+  Widget button(String name, VoidCallback? onPressed) {
+    return Material(
+      elevation: 8, // Adjust the elevation for shadow depth
+      shadowColor: Colors.black.withOpacity(0.2), // Color of the shadow
+      borderRadius:
+          BorderRadius.circular(10), // Optional: Adjust the border radius
+      child: ElevatedButton(
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(
+              horizontal: 20, vertical: 15), // Button padding
+          shape: RoundedRectangleBorder(
+            borderRadius:
+                BorderRadius.circular(10), // Optional: Adjust the border radius
+          ),
+        ),
+        child: Text(name),
+      ),
+    );
+  }
+
+  void showSaveTitleDialog({
+    required BuildContext context,
+    required void Function(String title) onSave,
+  }) {
+    final TextEditingController titleController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Enter Title'),
+        content: TextField(
+          controller: titleController,
+          decoration: const InputDecoration(hintText: 'Enter title here'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final title = titleController.text.trim();
+              if (title.isNotEmpty) {
+                Navigator.pop(context); // Close dialog
+                onSave(title); // Callback with entered title
+              }
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required String hint,
+    int? minLines,
+    String? Function(String?)? validator,
+  }) {
+    return TextFormField(
+      controller: controller,
+      keyboardType: TextInputType.multiline,
+      maxLines: minLines == null ? 1 : null,
+      minLines: minLines,
+      decoration: Utils().getInputDecoration(
+        labelText: label,
+        hintText: hint,
+      ),
+      validator: validator,
+    );
+  }
+
+  String? Function(String?) requiredValidator(String message) {
+    return (value) {
+      if (value == null || value.isEmpty) {
+        return message;
+      }
+      return null;
+    };
+  }
+
+  void showMessage(String message, {bool error = false}) {
+    Fluttertoast.showToast(
+        msg: message,
+        toastLength: Toast.LENGTH_LONG,
+        webPosition: "center",
+        timeInSecForIosWeb: 2,
+        webBgColor: error ? "#fc031c" : "#8ff268",
+        textColor: error ? Colors.white : Colors.red,
+        fontSize: 16.0);
   }
 }

@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class SharedPrefs {
   static const String _expiryKey = "expiry_time";
   static const String _configDataKey = "config_data";
+  static const String _androidTemplatePayloads = "android_template_payloads";
   static final SharedPrefs _instance = SharedPrefs._internal();
   static SharedPreferences? _preferences;
 
@@ -87,5 +88,26 @@ class SharedPrefs {
       return jsonDecode(jsonString); // Convert JSON string back to Map
     }
     return null; // Return null if no data is found
+  }
+
+  List<Map<String, dynamic>>? updateOrGetAndroidTemplatePayloads({
+    List<Map<String, dynamic>>? payloads,
+  }) {
+    if (payloads != null) {
+      final jsonString = jsonEncode(payloads);
+      _preferences?.setString(_androidTemplatePayloads, jsonString);
+      return null;
+    }
+
+    final storedString = _preferences?.getString(_androidTemplatePayloads);
+    if (storedString != null) {
+      final decoded = jsonDecode(storedString);
+      if (decoded is List) {
+        var list = List<Map<String, dynamic>>.from(decoded);
+        return list.isEmpty ? null : list;
+      }
+    }
+
+    return null;
   }
 }

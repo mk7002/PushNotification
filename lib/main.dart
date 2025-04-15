@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:pushapp/provider/ProviderSetup.dart';
-import 'package:pushapp/ui/home/HomeScreen.dart';
+import 'package:pushapp/route.dart';
 
 import 'storage/SharedPrefs.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  usePathUrlStrategy();
   await SharedPrefs.init();
   runApp(const MyApp());
 }
@@ -16,14 +18,37 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ProviderSetup(
-      child: MaterialApp(
-        title: 'Flutter Demo',
+      child: MaterialApp.router(
+        routerConfig: globalRouter,
+        title: 'Notify Now v1.0.1',
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
           useMaterial3: true,
         ),
-        home: const HomeScreen(),
       ),
     );
   }
 }
+
+//https://notifynow.web.app/
+// flutter build web
+// cd build/web
+// firebase login - kenimilind864
+//firebase deploy --only hosting:notifynow
+//firebase:json - {
+//   "hosting": {
+//     "public": ".",
+//     "site": "notifynow",
+//     "ignore": [
+//       "firebase.json",
+//       "**/.*",
+//       "**/node_modules/**"
+//     ],
+//     "rewrites": [
+//       {
+//         "source": "**",
+//         "destination": "/index.html"
+//       }
+//     ]
+//   }
+// }
