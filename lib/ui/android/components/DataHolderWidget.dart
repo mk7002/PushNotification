@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pushapp/data/DataHandler.dart';
+import 'package:pushapp/ui/components/header_name_widget.dart';
+import 'package:pushapp/ui/res/colors.dart';
 
 import '../../../Singleton/Singleton.dart';
 import '../../../provider/android_provider.dart';
@@ -34,22 +36,43 @@ class _DataHolderWidgetState extends State<DataHolderWidget> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.white,
-      padding: EdgeInsets.all(10),
+      padding: const EdgeInsets.all(10),
       child: Column(
         children: [
-          ImportDataWidget(),
+          const ImportDataWidget(),
+          const SizedBox(
+            height: 20,
+          ),
           Expanded(
-            child: Consumer<AndroidProvider>(
-                builder: (context, appProvider, child) {
-              return ListView.builder(
-                itemCount: appProvider.payloadList.length,
-                // Define the number of items
-                itemBuilder: (context, index) {
-                  return item(index, appProvider.payloadList[index]);
-                },
-              );
-            }),
+            child: HeaderNameWidget(
+              label: "Saved Payloads",
+              child: Expanded(
+                child: Consumer<AndroidProvider>(
+                    builder: (context, appProvider, child) {
+                  return LayoutBuilder(
+                    builder: (context, constraints) {
+                      final itemWidth = (constraints.maxWidth - 12) / 2;
+                      const minItemHeight = 60.0;
+                      final aspectRatio = itemWidth / minItemHeight;
+                      return GridView.builder(
+                        itemCount: appProvider.payloadList.length,
+                        padding: const EdgeInsets.all(16),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 15,
+                          mainAxisSpacing: 15,
+                          childAspectRatio:
+                              aspectRatio, // Ensures min height of ~100
+                        ),
+                        itemBuilder: (context, index) {
+                          return item(index, appProvider.payloadList[index]);
+                        },
+                      );
+                    },
+                  );
+                }),
+              ),
+            ),
           )
         ],
       ),
@@ -58,54 +81,47 @@ class _DataHolderWidgetState extends State<DataHolderWidget> {
 
   Widget item(int index, Map<String, dynamic> data) {
     bool isDefaultPayload = data["isDefaultPayload"] ?? false;
-    return Container(
-      margin: const EdgeInsets.all(20),
-      child: InkWell(
-        onTap: () {
-          selectedIndex = index;
-          Singleton().provider.setSelectedPayloadData(DataHandler().getUrl(),
-              data["headers"], data["body"], data["token"]);
-        },
-        child: Container(
-          decoration: BoxDecoration(
-            color: selectedIndex == index ? Colors.blue : Colors.grey,
+    return InkWell(
+      onTap: () {
+        selectedIndex = index;
+        Singleton().provider.setSelectedPayloadData(DataHandler().getUrl(),
+            data["headers"], data["body"], data["token"]);
+      },
+      child: Container(
+        decoration: BoxDecoration(
+            color: selectedIndex == index ? Colors.white : COLOR_BORDER_INNER,
             borderRadius: BorderRadius.circular(10),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.5),
-                spreadRadius: 2,
-                blurRadius: 2,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    "${data["name"]}",
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                    overflow: TextOverflow.ellipsis,
+            border: Border.all(
+                width: selectedIndex == index ? 2 : 1,
+                color: selectedIndex == index
+                    ? COLOR_ANDROID_GREEN
+                    : COLOR_BORDER)),
+        child: Container(
+          padding: const EdgeInsets.all(10),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Text(
+                  "${data["name"]}",
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w400,
+                    color: Colors.black,
                   ),
+                  overflow: TextOverflow.ellipsis,
                 ),
-                isDefaultPayload
-                    ? SizedBox()
-                    : IconButton(
-                        icon: const Icon(Icons.delete, color: Colors.white),
-                        onPressed: () {
-                          DataHandler()
-                              .deleteAndroidTemplatePayload(index, data);
-                        },
-                      ),
-              ],
-            ),
+              ),
+              isDefaultPayload
+                  ? const SizedBox()
+                  : IconButton(
+                      icon: const Icon(Icons.delete,
+                          size: 16, color: Color(0xff757473)),
+                      onPressed: () {
+                        DataHandler().deleteAndroidTemplatePayload(index, data);
+                      },
+                    ),
+            ],
           ),
         ),
       ),

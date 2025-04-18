@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pushapp/ui/components/custom_header.dart';
 import 'package:pushapp/ui/responsive_widget.dart';
 
 import '../../Singleton/Singleton.dart';
@@ -26,13 +27,7 @@ class _AndroidScreenState extends State<AndroidScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Color(0xFF3DDC84),
-        title: const Text(
-          "Android Push",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
-        ),
-      ),
+      appBar: const CustomHeader(),
       body: ResponsiveParentWidget(
         tablet: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
           const Expanded(child: DataHolderWidget()),

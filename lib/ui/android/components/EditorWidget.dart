@@ -5,6 +5,8 @@ import 'package:provider/provider.dart';
 import 'package:pushapp/Singleton/Singleton.dart';
 import 'package:pushapp/extension/AppExtension.dart';
 import 'package:pushapp/ui/components/Utils.dart';
+import 'package:pushapp/ui/components/header_name_widget.dart';
+import 'package:pushapp/ui/res/style_extensions.dart';
 
 import '../../../data/DataHandler.dart';
 import '../../../provider/android_provider.dart';
@@ -92,22 +94,33 @@ class _EditorWidgetState extends State<EditorWidget> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: Container(
-              padding: const EdgeInsets.all(20),
-              decoration: Utils().shadow(),
+        child: Container(
+          margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+          child: HeaderNameWidget(
+            label: "FCM Configuration",
+            child: Expanded(
               child: Form(
                 key: _formKey,
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    _editView(),
-                    const SizedBox(height: 20),
-                    SizedBox(height: 100, child: ResultWidget()),
-                    const SizedBox(height: 100),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _editView(),
+                            const SizedBox(height: 20),
+                            const SizedBox(height: 100, child: ResultWidget()),
+                            const SizedBox(height: 100),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: _buttons(),
+                    ),
                   ],
                 ),
               ),
@@ -115,26 +128,17 @@ class _EditorWidgetState extends State<EditorWidget> {
           ),
         ),
       ),
-      bottomSheet: Material(
-        elevation: 20, // This adds the floating shadow
-        borderRadius: const BorderRadius.only(
-          topRight: Radius.circular(20),
-          topLeft: Radius.circular(20),
-        ),
-        color: Colors.transparent, // Let child Container's color show through
-        child: Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.only(
-              topRight: Radius.circular(20),
-              topLeft: Radius.circular(20),
-            ),
-          ),
-          padding: const EdgeInsets.all(20),
-          width: double.infinity,
-          child: _buttons(),
-        ),
-      ),
+      // bottomSheet: Material(
+      //   elevation: 20, // This adds the floating shadow
+      //   borderRadius: 20.br,
+      //   color: Colors.transparent, // Let child Container's color show through
+      //   child: Container(
+      //     margin: const EdgeInsets.only(bottom: 10),
+      //     decoration: BoxDecoration(color: Colors.white, borderRadius: 20.br),
+      //     padding: const EdgeInsets.all(20),
+      //     child: _buttons(),
+      //   ),
+      // ),
     );
   }
 
@@ -188,13 +192,13 @@ class _EditorWidgetState extends State<EditorWidget> {
   Widget _buttons() {
     return Consumer<AndroidProvider>(builder: (context, appProvider, child) {
       return !appProvider.isConfigFileLoaded
-          ? SizedBox()
+          ? const SizedBox()
           : Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 _buildButton(
                   label: 'Format JSON',
-                  color: Colors.red,
+                  color: const Color(0xfff35049),
                   onPressed: () {
                     _formatJson(_headerController);
                     _formatJson(_bodyController);
@@ -203,7 +207,7 @@ class _EditorWidgetState extends State<EditorWidget> {
                 const SizedBox(width: 24),
                 _buildButton(
                   label: 'Send FCM Message',
-                  color: Colors.lightBlueAccent,
+                  color: const Color(0xff2a93ef),
                   onPressed: () {
                     if (_formKey.currentState?.validate() ?? false) {
                       sendFCMMessage();
@@ -213,7 +217,7 @@ class _EditorWidgetState extends State<EditorWidget> {
                 const SizedBox(width: 24),
                 _buildButton(
                   label: 'Save Template',
-                  color: Colors.orangeAccent,
+                  color: const Color(0xfffcab3d),
                   onPressed: () {
                     if (_formKey.currentState?.validate() ?? false) {
                       Utils().showSaveTitleDialog(
@@ -244,20 +248,21 @@ class _EditorWidgetState extends State<EditorWidget> {
         style: ElevatedButton.styleFrom(
           backgroundColor: color,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(25),
+            borderRadius: 8.br,
           ),
-          elevation: 5.0,
         ),
         onPressed: onPressed,
-        child: Padding(
-          padding: const EdgeInsets.all(5.0),
-          child: Text(
-            label,
-            maxLines: 3,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w900,
+        child: SizedBox(
+          height: 50,
+          child: Center(
+            child: Text(
+              label,
+              maxLines: 3,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
         ),

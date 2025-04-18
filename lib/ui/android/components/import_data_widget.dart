@@ -6,7 +6,9 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:pushapp/data/DataHandler.dart';
 import 'package:pushapp/extension/AppExtension.dart';
+import 'package:pushapp/ui/components/AppButton.dart';
 import 'package:pushapp/ui/components/Utils.dart';
+import 'package:pushapp/ui/components/header_name_widget.dart';
 
 import '../../../Singleton/Singleton.dart';
 
@@ -19,9 +21,6 @@ class ImportDataWidget extends StatefulWidget {
 
 class _ImportDataWidgetState extends State<ImportDataWidget> {
   final _urlController = TextEditingController(text: "");
-  final _formKey = GlobalKey<FormState>();
-  bool _isLoading = false;
-  String? _errorMessage;
 
   @override
   void dispose() {
@@ -77,42 +76,45 @@ class _ImportDataWidgetState extends State<ImportDataWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: Utils().shadow(),
-      padding: const EdgeInsets.all(20),
+    return HeaderNameWidget(
+      label: "Import Configurations",
       child: Column(
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
-                child: Utils().button("Import Android Service File", () {
-                  _importFile();
-                }),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                        child: ConfigButton(
+                      label: "Import Android Service File",
+                      onPressed: () {
+                        _importFile();
+                      },
+                    )),
+                  ],
+                ),
               ),
-            ],
-          ),
-          SizedBox(
-            height: 20,
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
+              SizedBox(
+                width: 20,
+              ),
               Expanded(
-                child: Utils().button("Import Sample Template File", () {
-                  _importTemplateFile();
-                }),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: ConfigButton(
+                          label: "Import Sample Template File",
+                          onPressed: () {
+                            _importTemplateFile();
+                          }),
+                    ),
+                  ],
+                ),
               ),
             ],
-          ),
-          if (_errorMessage != null)
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                _errorMessage!,
-                style: const TextStyle(color: Colors.red),
-              ),
-            ),
+          )
         ],
       ),
     );

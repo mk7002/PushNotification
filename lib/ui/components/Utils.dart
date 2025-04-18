@@ -1,7 +1,42 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 class Utils {
+  var android_service_file_json = {
+    "type": "service_account",
+    "project_id": "",
+    "private_key_id": "",
+    "private_key": "",
+    "client_email": "",
+    "client_id": "",
+    "auth_uri": "",
+    "token_uri": "",
+    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+    "client_x509_cert_url": "",
+    "universe_domain": "googleapis.com"
+  };
+
+  var sample_template_json = [
+    {
+      "name": "Sample Payload 1",
+      "headers": {},
+      "token": "token",
+      "body": {
+        "message": {
+          "notification": {
+            "title": "Portugal vs. Denmark",
+            "body": "great match!"
+          }
+        }
+      }
+    }
+  ];
+
+  static TextStyle textStyleBold({double size = -1}) => TextStyle(
+      fontWeight: FontWeight.bold, fontSize: size == -1 ? null : size);
+
   InputDecoration getInputDecoration({String? labelText, String? hintText}) {
     return InputDecoration(
       labelText: labelText,
@@ -32,10 +67,10 @@ class Utils {
       borderRadius: BorderRadius.all(Radius.circular(radius)),
       boxShadow: [
         BoxShadow(
-          color: Colors.grey.withOpacity(0.5),
-          spreadRadius: 2,
-          blurRadius: 3,
-          offset: const Offset(0, 3), // changes position of shadow
+          color: Colors.grey.withOpacity(0.3),
+          spreadRadius: 1,
+          blurRadius: 1,
+          offset: const Offset(0, 1), // changes position of shadow
         ),
       ],
     );
@@ -162,5 +197,28 @@ class Utils {
         webBgColor: error ? "#fc031c" : "#8ff268",
         textColor: error ? Colors.white : Colors.red,
         fontSize: 16.0);
+  }
+
+  void showJsonDialog(BuildContext context, sampleJson) {
+    String prettyJson = const JsonEncoder.withIndent('  ').convert(sampleJson);
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('JSON Data'),
+        content: SingleChildScrollView(
+          child: SelectableText(
+            prettyJson,
+            style: const TextStyle(fontFamily: 'Courier', fontSize: 14),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
+          )
+        ],
+      ),
+    );
   }
 }
