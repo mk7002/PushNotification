@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:pushapp/ui/res/colors.dart';
-import 'package:pushapp/ui/res/style_extensions.dart';
 
 class Appbutton extends StatelessWidget {
   const Appbutton({super.key});
@@ -14,12 +13,13 @@ class Appbutton extends StatelessWidget {
 class ConfigButton extends StatelessWidget {
   final String label;
   VoidCallback? onPressed;
+  VoidCallback? onInfoPressed;
 
-  ConfigButton({
-    super.key,
-    this.label = "Import Configuration",
-    this.onPressed,
-  });
+  ConfigButton(
+      {super.key,
+      this.label = "Import Configuration",
+      this.onPressed,
+      this.onInfoPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -28,18 +28,33 @@ class ConfigButton extends StatelessWidget {
         backgroundColor: COLOR_BORDER_INNER,
         side: const BorderSide(
           color: COLOR_BORDER,
-          // border color
-          width: 1, // border width
+          width: 1,
         ),
         shape: RoundedRectangleBorder(
-          borderRadius: 8.br, // rounded corners
+          borderRadius: BorderRadius.circular(8), // or 8.br if using extension
         ),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
       ),
       onPressed: onPressed,
-      child: Text(
-        label,
-        style: TextStyle(fontWeight: FontWeight.w500),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisSize: MainAxisSize.max,
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              style: const TextStyle(fontWeight: FontWeight.w500),
+            ),
+          ),
+          GestureDetector(
+            onTap: onInfoPressed,
+            child: const Icon(
+              Icons.info_outline,
+              size: 20,
+              color: Colors.black,
+            ),
+          ),
+        ],
       ),
     );
   }

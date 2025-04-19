@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:pushapp/provider/ProviderSetup.dart';
 import 'package:pushapp/route.dart';
+import 'package:pushapp/ui/components/Utils.dart';
 
 import 'storage/SharedPrefs.dart';
 
@@ -9,6 +10,7 @@ Future<void> main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   usePathUrlStrategy();
   await SharedPrefs.init();
+  await Utils().getAppVersionInfo();
   runApp(const MyApp());
 }
 
@@ -20,7 +22,7 @@ class MyApp extends StatelessWidget {
     return ProviderSetup(
       child: MaterialApp.router(
         routerConfig: globalRouter,
-        title: 'Notify Now v1.0.4',
+        title: 'Notify Now v${Utils.versionCode}',
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
           useMaterial3: true,

@@ -4,13 +4,16 @@ import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:pushapp/data/DataHandler.dart';
 import 'package:pushapp/extension/AppExtension.dart';
 import 'package:pushapp/ui/components/AppButton.dart';
 import 'package:pushapp/ui/components/Utils.dart';
 import 'package:pushapp/ui/components/header_name_widget.dart';
+import 'package:pushapp/ui/res/colors.dart';
 
 import '../../../Singleton/Singleton.dart';
+import '../../../provider/android_provider.dart';
 
 class ImportDataWidget extends StatefulWidget {
   const ImportDataWidget({super.key});
@@ -79,6 +82,7 @@ class _ImportDataWidgetState extends State<ImportDataWidget> {
     return HeaderNameWidget(
       label: "Import Configurations",
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
@@ -91,6 +95,10 @@ class _ImportDataWidgetState extends State<ImportDataWidget> {
                       label: "Import Android Service File",
                       onPressed: () {
                         _importFile();
+                      },
+                      onInfoPressed: () {
+                        Utils().showJsonDialog(
+                            context, Utils().android_service_file_json);
                       },
                     )),
                   ],
@@ -106,6 +114,10 @@ class _ImportDataWidgetState extends State<ImportDataWidget> {
                     Expanded(
                       child: ConfigButton(
                           label: "Import Sample Template File",
+                          onInfoPressed: () {
+                            Utils().showJsonDialog(
+                                context, Utils().sample_template_json);
+                          },
                           onPressed: () {
                             _importTemplateFile();
                           }),
@@ -114,7 +126,26 @@ class _ImportDataWidgetState extends State<ImportDataWidget> {
                 ),
               ),
             ],
-          )
+          ),
+          SizedBox(
+            height: 10,
+          ),
+          Consumer<AndroidProvider>(builder: (context, appProvider, child) {
+            var project_id = "";
+            if (appProvider.isConfigFileLoaded) {
+              project_id = DataHandler().appConfig["project_id"];
+            }
+            return !appProvider.isConfigFileLoaded
+                ? Text("No service file selected",
+                    style: TextStyle(
+                        color: Colors.red, fontWeight: FontWeight.w500))
+                : Text(
+                    "Service file loaded for project id : $project_id",
+                    style: TextStyle(
+                        color: COLOR_ANDROID_GREEN,
+                        fontWeight: FontWeight.w500),
+                  );
+          })
         ],
       ),
     );

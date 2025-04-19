@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pushapp/ui/components/Utils.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -62,7 +63,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
           ),
-          Text("Version - v1.0.4")
+          Text("Version - ${Utils.versionCode}")
         ],
       ),
     );

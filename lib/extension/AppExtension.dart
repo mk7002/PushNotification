@@ -19,7 +19,7 @@ extension ResultExtension on Map<String, dynamic> {
   String showResult() {
     switch (getType()) {
       case ResultType.neutral:
-        return "";
+        return "Result Console";
       case ResultType.inProgress:
         return "Sending...";
       case ResultType.success:

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 class Utils {
   var android_service_file_json = {
@@ -220,5 +221,14 @@ class Utils {
         ],
       ),
     );
+  }
+
+  static var versionCode = "";
+
+  Future<void> getAppVersionInfo() async {
+    final info = await PackageInfo.fromPlatform();
+    String vN = info.version; // e.g. "1.0.0"
+    String vC = info.buildNumber; // e.g. "1"
+    versionCode = "$vN.$vC";
   }
 }
