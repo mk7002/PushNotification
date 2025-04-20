@@ -3,9 +3,12 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SharedPrefs {
+  static const androidPrefix = 'android';
+  static const iosPrefix = 'ios';
+  static const String _access_token = "access_token";
   static const String _expiryKey = "expiry_time";
   static const String _configDataKey = "config_data";
-  static const String _androidTemplatePayloads = "android_template_payloads";
+  static const String _templatePayloads = "template_payloads";
   static final SharedPrefs _instance = SharedPrefs._internal();
   static SharedPreferences? _preferences;
 
@@ -62,44 +65,67 @@ class SharedPrefs {
     return _preferences!.clear();
   }
 
-  // Store DateTime (expiry time) as millisecondsSinceEpoch
-  Future<bool> setExpiry(DateTime expiry) async {
-    return _preferences!.setInt(_expiryKey, expiry.millisecondsSinceEpoch);
-  }
+  Future<DateTime?> tokenExpiry(
+      {DateTime? expiry, bool isAndroid = true}) async {
+    final key = _getKey(isAndroid, _expiryKey);
 
-  // Retrieve DateTime (expiry time) from millisecondsSinceEpoch
-  DateTime? getExpiry() {
-    int? expiryMillis = _preferences!.getInt(_expiryKey);
-    if (expiryMillis != null) {
-      return DateTime.fromMillisecondsSinceEpoch(expiryMillis);
+    if (expiry != null) {
+      await _preferences!.setInt(key, expiry.millisecondsSinceEpoch);
+      return expiry;
     }
-    return null; // Return null if no expiry time is found
+
+    final expiryMillis = _preferences!.getInt(key);
+    return expiryMillis != null
+        ? DateTime.fromMillisecondsSinceEpoch(expiryMillis)
+        : null;
   }
 
-  Future<bool> setConfigData(Map<String, dynamic> configData) async {
-    String jsonString = jsonEncode(configData); // Convert Map to JSON string
-    return _preferences!.setString(_configDataKey, jsonString);
+  Future<String?> accessToken({String? data, bool isAndroid = true}) async {
+    final key = _getKey(isAndroid, _access_token);
+
+    if (data != null) {
+      await _preferences!.setString(key, data);
+      return data;
+    }
+
+    final data0 = _preferences!.getString(key);
+    return data0;
   }
 
-  // Retrieve Map<String, dynamic> from a JSON string
-  Map<String, dynamic>? getConfigData() {
-    String? jsonString = _preferences!.getString(_configDataKey);
+  String _getKey(bool isAndroid, String suffix) {
+    return "${isAndroid ? androidPrefix : iosPrefix}.$suffix";
+  }
+
+  Future<Map<String, dynamic>?> configData({
+    Map<String, dynamic>? data,
+    bool isAndroid = true,
+  }) async {
+    final key = _getKey(isAndroid, _configDataKey);
+
+    if (data != null) {
+      final jsonString = jsonEncode(data);
+      await _preferences!.setString(key, jsonString);
+      return data;
+    }
+
+    final jsonString = _preferences!.getString(key);
     if (jsonString != null) {
-      return jsonDecode(jsonString); // Convert JSON string back to Map
+      return jsonDecode(jsonString);
     }
-    return null; // Return null if no data is found
+
+    return null;
   }
 
-  List<Map<String, dynamic>>? updateOrGetAndroidTemplatePayloads({
-    List<Map<String, dynamic>>? payloads,
-  }) {
+  List<Map<String, dynamic>>? templatePayloads(
+      {List<Map<String, dynamic>>? payloads, bool isAndroid = true}) {
+    final key = _getKey(isAndroid, _templatePayloads);
     if (payloads != null) {
       final jsonString = jsonEncode(payloads);
-      _preferences?.setString(_androidTemplatePayloads, jsonString);
+      _preferences?.setString(key, jsonString);
       return null;
     }
 
-    final storedString = _preferences?.getString(_androidTemplatePayloads);
+    final storedString = _preferences?.getString(key);
     if (storedString != null) {
       final decoded = jsonDecode(storedString);
       if (decoded is List) {

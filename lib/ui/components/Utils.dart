@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:pushapp/ui/res/style_extensions.dart';
 
 class Utils {
   var android_service_file_json = {
@@ -230,5 +231,35 @@ class Utils {
     String vN = info.version; // e.g. "1.0.0"
     String vC = info.buildNumber; // e.g. "1"
     versionCode = "$vN.$vC";
+  }
+
+  Widget buildButton({
+    required String label,
+    required Color color,
+    required VoidCallback onPressed,
+  }) {
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: color,
+        shape: RoundedRectangleBorder(
+          borderRadius: 8.br,
+        ),
+      ),
+      onPressed: onPressed,
+      child: SizedBox(
+        height: 50,
+        child: Center(
+          child: Text(
+            label,
+            maxLines: 3,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

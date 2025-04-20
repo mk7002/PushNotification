@@ -1,34 +1,28 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+
+import '../ui/res/strings.dart';
 
 class AndroidProvider with ChangeNotifier {
-  static String TYPE = "type";
-  static String MESSAGE = "message";
-  static String URL = "url";
-  static String HEADERS = "HEADERS";
-  static String BODY = "BODY";
-  static String TOKEN = "token";
-
   Map<String, dynamic> _result = {
-    TYPE: ResultType.neutral,
-    MESSAGE: "No Result"
+    Strings.TYPE: ResultType.neutral,
+    Strings.MESSAGE: "No Result"
   };
 
   Map<String, dynamic> _selectedPayloadData = {};
 
   List<Map<String, dynamic>> _payloadList = [];
+  List<Map<String, dynamic>> get payloadList => _payloadList;
 
   Map<String, dynamic> get selectedPayloadData => _selectedPayloadData;
 
   Map<String, dynamic> get result => _result;
-
-  List<Map<String, dynamic>> get payloadList => _payloadList;
 
   List<void Function(Map<String, dynamic>)> callbacks = [];
 
   bool isConfigFileLoaded = false;
 
   void setResult(ResultType type, String message) {
-    _result = {TYPE: type, MESSAGE: message};
+    _result = {Strings.TYPE: type, Strings.MESSAGE: message};
     notifyListeners();
   }
 
@@ -43,10 +37,10 @@ class AndroidProvider with ChangeNotifier {
 
   void setSelectedPayloadData(url, headers, body, token) {
     _selectedPayloadData = {
-      URL: url,
-      HEADERS: headers,
-      BODY: body,
-      TOKEN: token
+      Strings.URL: url,
+      Strings.HEADERS: headers,
+      Strings.BODY: body,
+      Strings.TOKEN: token
     };
     if (callbacks.isNotEmpty) {
       for (var callback in callbacks) {
@@ -70,6 +64,15 @@ class AndroidProvider with ChangeNotifier {
     } catch (e) {
       print(e);
     }
+  }
+
+  @override
+  void dispose() {
+    _result.clear();
+    _selectedPayloadData.clear();
+    _payloadList.clear();
+    callbacks.clear();
+    super.dispose();
   }
 }
 

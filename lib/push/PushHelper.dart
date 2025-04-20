@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
-import 'package:pushapp/Singleton/Singleton.dart';
+import 'package:pushapp/Singleton/app_provider.dart';
 import 'package:pushapp/provider/android_provider.dart';
 import 'package:pushapp/push/AccessTokenManager.dart';
 
@@ -15,7 +15,7 @@ class PushHelper {
   }
 
   Future<String> getAccessToken() async {
-    return await AccessTokenManager().getAccessToken();
+    return await AccessTokenManager().getAndroidAccessToken();
   }
 
   Future<void> sendFCMMessage(
@@ -25,7 +25,9 @@ class PushHelper {
     Map<String, dynamic> messageBody,
     Map<String, dynamic> headers,
   ) async {
-    Singleton().provider.setResult(ResultType.inProgress, "Sending...");
+    AppProvider()
+        .androidProvider
+        .setResult(ResultType.inProgress, "Sending...");
 
     accessToken ??= await PushHelper().getAccessToken();
     print("Access Token $accessToken");
@@ -64,13 +66,89 @@ class PushHelper {
       );
 
       if (response.statusCode == 200) {
-        Singleton().provider.setResult(ResultType.success, response.body);
+        AppProvider()
+            .androidProvider
+            .setResult(ResultType.success, response.body);
       } else {
-        Singleton().provider.setResult(ResultType.error, response.body);
+        AppProvider()
+            .androidProvider
+            .setResult(ResultType.error, response.body);
       }
     } catch (e) {
-      Singleton().provider.setResult(ResultType.error, e.toString());
+      AppProvider().androidProvider.setResult(ResultType.error, e.toString());
       print("❌ Exception while sending: $e");
+    }
+  }
+
+  /// Sends a push notification via your Render APNs proxy
+  Future<void> sendApnsNotification({
+    required String jwtToken,
+    required String deviceToken,
+    required String bundleId,
+    String environment = 'sandbox',
+
+    // Optional simple payload
+    String? title,
+    String? body,
+    String? sound,
+
+    // Full custom payload (overrides title/body/sound)
+    Map<String, dynamic>? payload,
+
+    // Optional extra APNs headers
+    Map<String, String>? headers,
+  }) async {
+    AppProvider().iosProvider.setResult(ResultType.inProgress, "Sending...");
+
+    final url = Uri.parse('https://apns-server-yunz.onrender.com/send');
+
+    // If a full payload is not provided, build a basic one
+    final effectivePayload = payload ??
+        {
+          "aps": {
+            "alert": {
+              "title": title ?? "Hello!",
+              "body": body ?? "This is a test notification",
+            },
+            "sound": sound ?? "default"
+          }
+        };
+
+    // Build request body
+    final bodyData = {
+      'jwtToken': jwtToken,
+      'deviceToken': deviceToken,
+      'bundleId': bundleId,
+      'environment': environment,
+      'payload': effectivePayload,
+    };
+
+    // Only include headers if provided
+    if (headers != null && headers.isNotEmpty) {
+      bodyData['headers'] = headers;
+    }
+
+    AppProvider().iosProvider.setResult(ResultType.inProgress, "Loading...");
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(bodyData),
+      );
+
+      if (response.statusCode == 200) {
+        AppProvider().iosProvider.setResult(ResultType.success, response.body);
+        print('✅ Notification sent successfully!');
+        print(response.body);
+      } else {
+        AppProvider().iosProvider.setResult(ResultType.error, response.body);
+        print('❌ Failed to send notification: ${response.statusCode}');
+        print(response.body);
+      }
+    } catch (e) {
+      print('❌ Error sending request: $e');
+      AppProvider().iosProvider.setResult(ResultType.error, "catch : $e");
     }
   }
 }

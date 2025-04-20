@@ -3,13 +3,15 @@ import 'dart:convert';
 import 'package:pushapp/data/DataHandler.dart';
 import 'package:pushapp/provider/android_provider.dart';
 
+import '../ui/res/strings.dart';
+
 extension ResultExtension on Map<String, dynamic> {
   ResultType getType() {
-    return this[AndroidProvider.TYPE] as ResultType;
+    return this[Strings.TYPE] as ResultType;
   }
 
   String getMessage() {
-    return this[AndroidProvider.MESSAGE] as String;
+    return this[Strings.MESSAGE] as String;
   }
 
   bool isInProgress() {
@@ -49,7 +51,7 @@ extension AppConfigExtension on Map<String, dynamic> {
 extension PayLoadData on Map<String, dynamic> {
   String getUrl() {
     try {
-      return this[AndroidProvider.URL];
+      return this[Strings.URL];
     } catch (e) {
       return "";
     }
@@ -57,7 +59,7 @@ extension PayLoadData on Map<String, dynamic> {
 
   String token() {
     try {
-      return this[AndroidProvider.TOKEN];
+      return this[Strings.TOKEN];
     } catch (e) {
       return "";
     }
@@ -65,8 +67,8 @@ extension PayLoadData on Map<String, dynamic> {
 
   String headers() {
     try {
-      return this[AndroidProvider.HEADERS] != null
-          ? jsonEncode(this[AndroidProvider.HEADERS])
+      return this[Strings.HEADERS] != null
+          ? jsonEncode(this[Strings.HEADERS])
           : "";
     } catch (e) {
       return "$e";
@@ -75,11 +77,25 @@ extension PayLoadData on Map<String, dynamic> {
 
   String body() {
     try {
-      return this[AndroidProvider.BODY] != null
-          ? jsonEncode(this[AndroidProvider.BODY])
-          : "";
+      return this[Strings.BODY] != null ? jsonEncode(this[Strings.BODY]) : "";
     } catch (e) {
       return "$e";
+    }
+  }
+
+  String apnServer() {
+    try {
+      return this[Strings.APN_SERVER] ?? Strings.LIST_APNS_SERVER[0];
+    } catch (e) {
+      return Strings.LIST_APNS_SERVER[0];
+    }
+  }
+
+  String pushType() {
+    try {
+      return this[Strings.PUSH_TYPE] ?? Strings.LIST_PUSH_TYPE[0];
+    } catch (e) {
+      return Strings.LIST_PUSH_TYPE[0];
     }
   }
 }

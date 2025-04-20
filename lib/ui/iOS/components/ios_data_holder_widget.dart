@@ -1,37 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:pushapp/data/DataHandler.dart';
-import 'package:pushapp/ui/components/header_name_widget.dart';
-import 'package:pushapp/ui/components/payload_list_tiles.dart';
+import 'package:pushapp/provider/ios_provider.dart';
+import 'package:pushapp/ui/iOS/components/ios_import_data_widget/ios_data_import_widget.dart';
 
-import '../../../Singleton/app_provider.dart';
-import '../../../provider/android_provider.dart';
-import 'import_data_widget.dart';
+import '../../components/header_name_widget.dart';
+import '../../components/payload_list_tiles.dart';
+import '../apns_service_status_widget.dart';
 
-class DataHolderWidget extends StatefulWidget {
-  const DataHolderWidget({super.key});
+class IosDataContainerWidget extends StatefulWidget {
+  const IosDataContainerWidget({super.key});
 
   @override
-  State<DataHolderWidget> createState() => _DataHolderWidgetState();
+  State<IosDataContainerWidget> createState() => _IosDataContainerWidget();
 }
 
-class _DataHolderWidgetState extends State<DataHolderWidget> {
+class _IosDataContainerWidget extends State<IosDataContainerWidget> {
   int selectedIndex = -1;
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      AppProvider()
-          .androidProvider
-          .setPayloadList(DataHandler().getAndroidTemplatePayloads());
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +23,11 @@ class _DataHolderWidgetState extends State<DataHolderWidget> {
       padding: const EdgeInsets.all(10),
       child: Column(
         children: [
-          const ImportDataWidget(),
+          IosDataImportWidget(),
+          const SizedBox(
+            height: 20,
+          ),
+          ApnsServiceStatusWidget(),
           const SizedBox(
             height: 20,
           ),
@@ -47,7 +35,7 @@ class _DataHolderWidgetState extends State<DataHolderWidget> {
             child: HeaderNameWidget(
               label: "Saved Payloads",
               child: Expanded(
-                child: Consumer<AndroidProvider>(
+                child: Consumer<IosPlatformProvider>(
                     builder: (context, appProvider, child) {
                   return LayoutBuilder(
                     builder: (context, constraints) {
@@ -67,8 +55,8 @@ class _DataHolderWidgetState extends State<DataHolderWidget> {
                         itemBuilder: (context, index) {
                           return PayloadListTile(
                             onDeleted: (index) {
-                              DataHandler().deleteAndroidTemplatePayload(
-                                  index, appProvider.payloadList[index]);
+                              var data = appProvider.payloadList[index];
+                              appProvider.deleteTemplatePayload(index, data);
                             },
                             index: index,
                             data: appProvider.payloadList[index],
@@ -77,14 +65,8 @@ class _DataHolderWidgetState extends State<DataHolderWidget> {
                               setState(() {
                                 selectedIndex = selected;
                               });
-                              var data = appProvider.payloadList[index];
-                              AppProvider()
-                                  .androidProvider
-                                  .setSelectedPayloadData(
-                                      DataHandler().getUrl(),
-                                      data["headers"],
-                                      data["body"],
-                                      data["token"]);
+                              appProvider.onPayloadSelected(
+                                  appProvider.payloadList[index]);
                             },
                           );
                         },
@@ -94,7 +76,7 @@ class _DataHolderWidgetState extends State<DataHolderWidget> {
                 }),
               ),
             ),
-          )
+          ),
         ],
       ),
     );

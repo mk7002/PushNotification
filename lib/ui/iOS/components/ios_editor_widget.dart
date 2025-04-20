@@ -4,26 +4,28 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pushapp/Singleton/app_provider.dart';
 import 'package:pushapp/extension/AppExtension.dart';
+import 'package:pushapp/provider/ios_provider.dart';
 import 'package:pushapp/ui/components/Utils.dart';
 import 'package:pushapp/ui/components/header_name_widget.dart';
+import 'package:pushapp/ui/res/strings.dart';
 import 'package:pushapp/ui/res/style_extensions.dart';
 
-import '../../../data/DataHandler.dart';
-import '../../../provider/android_provider.dart';
-import '../../../push/PushHelper.dart';
-import 'ResultWidget.dart';
+import '../../android/components/ResultWidget.dart';
+import '../../components/custom_dropdown_widget.dart';
 
-class EditorWidget extends StatefulWidget {
+class IosEditorWidget extends StatefulWidget {
   @override
-  _EditorWidgetState createState() => _EditorWidgetState();
+  _IosEditorWidgetState createState() => _IosEditorWidgetState();
 }
 
-class _EditorWidgetState extends State<EditorWidget> {
+class _IosEditorWidgetState extends State<IosEditorWidget> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _urlController = TextEditingController();
   final TextEditingController _headerController = TextEditingController();
   final TextEditingController _bodyController = TextEditingController();
   final TextEditingController _tokenController = TextEditingController();
+
+  var pushType = Strings.LIST_PUSH_TYPE[0];
+  var apnServer = Strings.LIST_APNS_SERVER[0];
 
   Map<String, dynamic>? _cachedPayload;
   Map<String, dynamic>? _cachedHeaders;
@@ -38,18 +40,17 @@ class _EditorWidgetState extends State<EditorWidget> {
     super.didChangeDependencies();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      AppProvider().androidProvider.addListeners(updateData);
+      AppProvider().iosProvider.addListeners(updateData);
     });
   }
 
   void updateData(Map<String, dynamic> data) {
     var headers = data.headers();
-    _urlController.text = DataHandler().getUrl();
     _headerController.text = headers.isEmpty ? "{}" : headers;
     _bodyController.text = data.body();
     _tokenController.text = data.token();
-
-    _formatJson(_headerController);
+    apnServer = data.apnServer();
+    pushType = data.pushType();
     _formatJson(_bodyController);
     setState(() {});
   }
@@ -79,11 +80,6 @@ class _EditorWidgetState extends State<EditorWidget> {
 
   @override
   void dispose() {
-    // Provider.of<AndroidProvider>(
-    //   context,
-    //   listen: false,
-    // ).addListeners(updateData, remove: true);
-    _urlController.dispose();
     _headerController.dispose();
     _bodyController.dispose();
     _tokenController.dispose();
@@ -97,7 +93,7 @@ class _EditorWidgetState extends State<EditorWidget> {
         child: Container(
           margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
           child: HeaderNameWidget(
-            label: "FCM Configuration",
+            label: "APNS Configuration",
             child: Expanded(
               child: Form(
                 key: _formKey,
@@ -111,7 +107,11 @@ class _EditorWidgetState extends State<EditorWidget> {
                           children: [
                             _editView(),
                             const SizedBox(height: 20),
-                            SizedBox(height: 100, child: ResultWidget()),
+                            SizedBox(
+                                height: 100,
+                                child: ResultWidget(
+                                  isAndroid: false,
+                                )),
                             const SizedBox(height: 100),
                           ],
                         ),
@@ -128,17 +128,6 @@ class _EditorWidgetState extends State<EditorWidget> {
           ),
         ),
       ),
-      // bottomSheet: Material(
-      //   elevation: 20, // This adds the floating shadow
-      //   borderRadius: 20.br,
-      //   color: Colors.transparent, // Let child Container's color show through
-      //   child: Container(
-      //     margin: const EdgeInsets.only(bottom: 10),
-      //     decoration: BoxDecoration(color: Colors.white, borderRadius: 20.br),
-      //     padding: const EdgeInsets.all(20),
-      //     child: _buttons(),
-      //   ),
-      // ),
     );
   }
 
@@ -146,11 +135,30 @@ class _EditorWidgetState extends State<EditorWidget> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Utils().buildTextField(
-          controller: _urlController,
-          label: 'FCM Endpoint URL',
-          hint: 'Enter the URL of the FCM endpoint',
-          validator: Utils().requiredValidator('Please enter the URL'),
+        CustomDropdown(
+          label: 'Push Type',
+          items: Strings.LIST_PUSH_TYPE,
+          value: pushType,
+          onChanged: (newValue) {
+            if (newValue != null) {
+              setState(() {
+                pushType = newValue;
+              });
+            }
+          },
+        ),
+        const SizedBox(height: 16.0),
+        CustomDropdown(
+          label: 'APN Server',
+          items: Strings.LIST_APNS_SERVER,
+          value: apnServer,
+          onChanged: (newValue) {
+            if (newValue != null) {
+              setState(() {
+                apnServer = newValue;
+              });
+            }
+          },
         ),
         const SizedBox(height: 16.0),
         Utils().buildTextField(
@@ -190,8 +198,9 @@ class _EditorWidgetState extends State<EditorWidget> {
   }
 
   Widget _buttons() {
-    return Consumer<AndroidProvider>(builder: (context, appProvider, child) {
-      return !appProvider.isConfigFileLoaded
+    return Consumer<IosPlatformProvider>(
+        builder: (context, appProvider, child) {
+      return appProvider.privateKeyContent == null
           ? const SizedBox()
           : Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -206,11 +215,11 @@ class _EditorWidgetState extends State<EditorWidget> {
                 ),
                 const SizedBox(width: 24),
                 _buildButton(
-                  label: 'Send FCM Message',
+                  label: 'Send APNS Message',
                   color: const Color(0xff2a93ef),
                   onPressed: () {
                     if (_formKey.currentState?.validate() ?? false) {
-                      sendFCMMessage();
+                      sendApnsMessage();
                     }
                   },
                 ),
@@ -223,11 +232,14 @@ class _EditorWidgetState extends State<EditorWidget> {
                       Utils().showSaveTitleDialog(
                           context: context,
                           onSave: (title) {
-                            DataHandler().saveAndroidTemplatePayload({
+                            appProvider.saveTemplatePayload({
                               "name": title,
-                              "headers": getPayload(_headerController.text),
-                              "body": getPayload(_bodyController.text),
-                              "token": _tokenController.text
+                              Strings.HEADERS:
+                                  getPayload(_headerController.text),
+                              Strings.BODY: getPayload(_bodyController.text),
+                              Strings.TOKEN: _tokenController.text,
+                              Strings.APN_SERVER: apnServer,
+                              Strings.PUSH_TYPE: pushType
                             });
                           });
                     }
@@ -270,16 +282,16 @@ class _EditorWidgetState extends State<EditorWidget> {
     );
   }
 
-  Future<void> sendFCMMessage() async {
+  Future<void> sendApnsMessage() async {
     Future.delayed(const Duration(milliseconds: 200), () {
       try {
-        PushHelper().sendFCMMessage(
-          null,
-          _urlController.text,
-          _tokenController.text,
-          _getCachedPayload(),
-          _getCachedHeaders(),
-        );
+        AppProvider().iosProvider.sendPush({
+          "token": _tokenController.text,
+          "headers": _getCachedHeaders(),
+          "environment": apnServer,
+          "body": _getCachedPayload(),
+          "push_type": pushType
+        });
       } catch (e) {
         // Handle errors
       }

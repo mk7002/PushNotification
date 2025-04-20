@@ -1,7 +1,7 @@
 import 'package:pushapp/extension/AppExtension.dart';
 import 'package:pushapp/ui/components/Utils.dart';
 
-import '../Singleton/Singleton.dart';
+import '../Singleton/app_provider.dart';
 import '../storage/SharedPrefs.dart';
 
 class DataHandler {
@@ -17,16 +17,16 @@ class DataHandler {
   List<Map<String, dynamic>> _androidTemplatePayload = [];
   String? _url;
 
-  void init() {
-    var data = SharedPrefs().getConfigData();
+  Future<void> init() async {
+    var data = await SharedPrefs().configData();
     if (data != null && data.getProjectId().isNotEmpty) {
       appConfig = data;
-      Singleton().provider.setConfigFileLoaded(true);
+      AppProvider().androidProvider.setConfigFileLoaded(true);
     } else {
       if (data != null && data.isOldConfig()) {
         Utils().showMessage("Please load new config", error: true);
       } else
-        Singleton().provider.setConfigFileLoaded(false);
+        AppProvider().androidProvider.setConfigFileLoaded(false);
     }
   }
 
@@ -40,8 +40,7 @@ class DataHandler {
 
   List<Map<String, dynamic>> getAndroidTemplatePayloads() {
     _androidTemplatePayload =
-        SharedPrefs().updateOrGetAndroidTemplatePayloads() ??
-            _getDefaultAndroidPayload();
+        SharedPrefs().templatePayloads() ?? _getDefaultAndroidPayload();
     return _androidTemplatePayload;
   }
 
@@ -49,10 +48,9 @@ class DataHandler {
     var oldPayload = getAndroidTemplatePayloads();
     oldPayload.addAll(_newList);
     _androidTemplatePayload = oldPayload;
-    SharedPrefs()
-        .updateOrGetAndroidTemplatePayloads(payloads: _androidTemplatePayload);
-    Singleton()
-        .provider
+    SharedPrefs().templatePayloads(payloads: _androidTemplatePayload);
+    AppProvider()
+        .androidProvider
         .setPayloadList(DataHandler().getAndroidTemplatePayloads());
   }
 
@@ -60,10 +58,9 @@ class DataHandler {
     var oldPayload = getAndroidTemplatePayloads();
     oldPayload.add(_newPayload);
     _androidTemplatePayload = oldPayload;
-    SharedPrefs()
-        .updateOrGetAndroidTemplatePayloads(payloads: _androidTemplatePayload);
-    Singleton()
-        .provider
+    SharedPrefs().templatePayloads(payloads: _androidTemplatePayload);
+    AppProvider()
+        .androidProvider
         .setPayloadList(DataHandler().getAndroidTemplatePayloads());
   }
 
@@ -78,11 +75,10 @@ class DataHandler {
 
       // Update the shared instance and shared preferences
       _androidTemplatePayload = currentPayloads;
-      SharedPrefs().updateOrGetAndroidTemplatePayloads(
-          payloads: _androidTemplatePayload);
+      SharedPrefs().templatePayloads(payloads: _androidTemplatePayload);
 
       // Notify provider with updated list
-      Singleton().provider.setPayloadList(_androidTemplatePayload);
+      AppProvider().androidProvider.setPayloadList(_androidTemplatePayload);
     } catch (e) {
       print("error $e");
     }
@@ -124,7 +120,7 @@ class DataHandler {
 
   void setAppConfig(Map<String, dynamic> data) {
     appConfig = data;
-    SharedPrefs().setConfigData(appConfig);
+    SharedPrefs().configData(data: appConfig);
   }
 
   String getUrl() {
