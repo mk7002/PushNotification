@@ -10,6 +10,7 @@ class IosPlatformProvider with ChangeNotifier {
   List<Map<String, dynamic>> _payloadList = [];
 
   List<Map<String, dynamic>> get payloadList => _payloadList;
+
   Map<String, dynamic> get result => _result;
   Map<String, dynamic> _result = {
     Strings.TYPE: ResultType.neutral,
@@ -35,6 +36,8 @@ class IosPlatformProvider with ChangeNotifier {
       setP8FileData(p8, isLoad: true);
       saveTemplatePayload(p8, isLoad: true);
       saveTeamData(p8, isLoad: true);
+    } else {
+      setPayloadList(_getDefaultIosPayload());
     }
     var payloadList = SharedPrefs().templatePayloads(isAndroid: false);
 
@@ -44,12 +47,11 @@ class IosPlatformProvider with ChangeNotifier {
   Future<void> saveTeamData(Map<String, dynamic> teamData,
       {bool isLoad = false}) async {
     var data = await SharedPrefs().configData(isAndroid: false);
-    teamId = teamData["teamId"];
-    keyId = teamData["keyId"];
-    bundleId = teamData["bundleId"];
+    teamId = teamData["teamId"] ?? "";
+    keyId = teamData["keyId"] ?? "";
+    bundleId = teamData["bundleId"] ?? "";
     data ??= {};
     data.addAll(teamData);
-    print("data $data");
     if (!isLoad) SharedPrefs().configData(data: data, isAndroid: false);
     notifyListeners();
   }
@@ -114,6 +116,39 @@ class IosPlatformProvider with ChangeNotifier {
     if (!isLoad)
       SharedPrefs().templatePayloads(payloads: _payloadList, isAndroid: false);
     notifyListeners();
+  }
+
+  List<Map<String, dynamic>> _getDefaultIosPayload() {
+    return [
+      {
+        "name": "Sample Payload 1",
+        "isDefaultPayload": true,
+        "headers": {},
+        "token": "token123",
+        "apn_server": "sandbox",
+        "push_type": "alert",
+        "body": {
+          "aps": {
+            "alert": {"title": "Custom Title 11", "body": "Custom Body"},
+            "sound": "ping.aiff"
+          },
+          "customKey": "customValue"
+        }
+      },
+      {
+        "name": "Sample Payload 2",
+        "isDefaultPayload": true,
+        "apn_server": "production",
+        "push_type": "background",
+        "headers": {},
+        "token": "token",
+        "body": {
+          "aps": {
+            "alert": {"title": "Custom Title 22", "body": "Custom Body"},
+          }
+        }
+      }
+    ];
   }
 
   void deleteTemplatePayload(int index, Map<String, dynamic> payloadToDelete) {

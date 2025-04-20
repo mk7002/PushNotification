@@ -5,7 +5,6 @@ import 'package:pushapp/ui/iOS/components/ios_import_data_widget/ios_data_import
 
 import '../../components/header_name_widget.dart';
 import '../../components/payload_list_tiles.dart';
-import '../apns_service_status_widget.dart';
 
 class IosDataContainerWidget extends StatefulWidget {
   const IosDataContainerWidget({super.key});
@@ -24,10 +23,6 @@ class _IosDataContainerWidget extends State<IosDataContainerWidget> {
       child: Column(
         children: [
           IosDataImportWidget(),
-          const SizedBox(
-            height: 20,
-          ),
-          ApnsServiceStatusWidget(),
           const SizedBox(
             height: 20,
           ),

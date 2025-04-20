@@ -8,6 +8,7 @@ import 'package:pushapp/utils/file_manager.dart';
 
 import '../../../../provider/ios_provider.dart';
 import '../../../res/colors.dart';
+import '../../apns_service_status_widget.dart';
 
 class IosDataImportWidget extends StatefulWidget {
   const IosDataImportWidget({super.key});
@@ -44,10 +45,7 @@ class _IosDataImportWidgetState extends State<IosDataImportWidget> {
                       onPressed: () {
                         _importFile();
                       },
-                      onInfoPressed: () {
-                        Utils().showJsonDialog(
-                            context, Utils().android_service_file_json);
-                      },
+                      onInfoPressed: () {},
                     )),
                   ],
                 ),
@@ -64,7 +62,7 @@ class _IosDataImportWidgetState extends State<IosDataImportWidget> {
                           label: "Import Sample Template File",
                           onInfoPressed: () {
                             Utils().showJsonDialog(
-                                context, Utils().sample_template_json);
+                                context, Utils().sample_ios_payload);
                           },
                           onPressed: () {
                             _importTemplateFile();
@@ -127,22 +125,31 @@ class _IosDataImportWidgetState extends State<IosDataImportWidget> {
                 }
               }),
           SizedBox(height: 10),
-          Consumer<IosPlatformProvider>(builder: (context, appProvider, child) {
-            var fileName = "";
-            if (appProvider.fileName != null) {
-              fileName = appProvider.fileName!;
-            }
-            return fileName == null || fileName.isEmpty
-                ? const Text("No .p8 file selected",
-                    style: TextStyle(
-                        color: Colors.red, fontWeight: FontWeight.w500))
-                : Text(
-                    "P8 file loaded for  : $fileName",
-                    style: const TextStyle(
-                        color: COLOR_ANDROID_GREEN,
-                        fontWeight: FontWeight.w500),
-                  );
-          })
+          Row(
+            children: [
+              Expanded(
+                flex: 6,
+                child: Consumer<IosPlatformProvider>(
+                    builder: (context, appProvider, child) {
+                  var fileName = "";
+                  if (appProvider.fileName != null) {
+                    fileName = appProvider.fileName!;
+                  }
+                  return fileName == null || fileName.isEmpty
+                      ? const Text("No .p8 file selected",
+                          style: TextStyle(
+                              color: Colors.red, fontWeight: FontWeight.w500))
+                      : Text(
+                          "P8 file loaded for  : $fileName",
+                          style: const TextStyle(
+                              color: COLOR_ANDROID_GREEN,
+                              fontWeight: FontWeight.w500),
+                        );
+                }),
+              ),
+              Expanded(flex: 4, child: ApnsServiceStatusWidget()),
+            ],
+          )
         ],
       ),
     );

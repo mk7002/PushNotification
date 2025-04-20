@@ -36,6 +36,24 @@ class Utils {
     }
   ];
 
+  var sample_ios_payload = [
+    {
+      "name": "Sample Payload 1",
+      "isDefaultPayload": true,
+      "headers": {},
+      "token": "token123",
+      "apn_server": "sandbox",
+      "push_type": "alert",
+      "body": {
+        "aps": {
+          "alert": {"title": "Custom Title 11", "body": "Custom Body"},
+          "sound": "ping.aiff"
+        },
+        "customKey": "customValue"
+      }
+    }
+  ];
+
   static TextStyle textStyleBold({double size = -1}) => TextStyle(
       fontWeight: FontWeight.bold, fontSize: size == -1 ? null : size);
 

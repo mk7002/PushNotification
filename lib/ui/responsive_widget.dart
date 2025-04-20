@@ -25,7 +25,7 @@ class ResponsiveParentWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.sizeOf(context).width;
-
+    return desktop;
     if (width < 904) {
       return mobile ??
           const SizedBox.shrink(); // Return an empty widget if mobile is null

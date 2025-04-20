@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:pushapp/ui/components/header_name_widget.dart';
-import 'package:pushapp/ui/res/colors.dart';
-import 'package:pushapp/ui/res/style_extensions.dart';
 
 class ApnsServiceStatusWidget extends StatefulWidget {
   const ApnsServiceStatusWidget({Key? key}) : super(key: key);
@@ -63,73 +60,60 @@ class _ApnsServiceStatusWidgetState extends State<ApnsServiceStatusWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return HeaderNameWidget(
-      label: 'APNs Server Check',
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
       child: Container(
-        child: Card(
-          elevation: 6,
-          shape: RoundedRectangleBorder(borderRadius: 10.br),
-          margin: const EdgeInsets.all(10),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                const Icon(Icons.cloud_outlined,
-                    size: 20, color: Colors.blueAccent),
-                const SizedBox(width: 10),
-                Text(
-                  "APNs Server Status",
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(width: 10),
-
-                // Show loading indicator
-                if (_isChecking)
-                  const CircularProgressIndicator()
-
-                // Show retry button only if server is not running
-                else if (!_isServerRunning)
-                  ElevatedButton.icon(
-                    onPressed: _checkServerStatus,
-                    icon: const Icon(Icons.refresh),
-                    label: const Text("Check Now"),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: COLOR_ANDROID_GREEN,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 10),
-                      textStyle: const TextStyle(fontSize: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-
-                if (_statusMessage != null) ...[
-                  const SizedBox(height: 20),
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: _statusColor.withOpacity(0.1),
-                      border: Border.all(color: _statusColor),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      _statusMessage!,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: _statusColor,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ],
-              ],
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border.all(color: _statusColor, width: 1.2),
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.1),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
             ),
-          ),
+          ],
+        ),
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              _isServerRunning
+                  ? Icons.check_circle_outline
+                  : Icons.cloud_off_outlined,
+              color: _statusColor,
+              size: 22,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                _statusMessage ?? "Checking...",
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: _statusColor,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(width: 8),
+            _isChecking
+                ? const SizedBox(
+                    height: 16,
+                    width: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : IconButton(
+                    icon: const Icon(Icons.refresh, size: 18),
+                    onPressed: _checkServerStatus,
+                    tooltip: "Refresh",
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+          ],
         ),
       ),
     );
