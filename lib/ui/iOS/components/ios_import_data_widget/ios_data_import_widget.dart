@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pushapp/Singleton/app_provider.dart';
@@ -147,7 +148,9 @@ class _IosDataImportWidgetState extends State<IosDataImportWidget> {
                         );
                 }),
               ),
-              Expanded(flex: 4, child: ApnsServiceStatusWidget()),
+              Expanded(
+                  flex: 4,
+                  child: kIsWeb ? ApnsServiceStatusWidget() : SizedBox()),
             ],
           )
         ],

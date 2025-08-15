@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pushapp/ui/components/Utils.dart';
@@ -21,7 +22,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 Expanded(
                   child: InkWell(
                     onTap: () {
-                      context.go("/android");
+                      if (kIsWeb)
+                        context.go("/android");
+                      else
+                        context.push("/android");
                     },
                     child: SizedBox(
                       height: MediaQuery.of(context).size.height,
@@ -42,7 +46,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 Expanded(
                   child: InkWell(
                     onTap: () {
-                      context.go("/ios");
+                      if (kIsWeb)
+                        context.go("/ios");
+                      else
+                        context.push("/ios");
                     },
                     child: SizedBox(
                       height: MediaQuery.of(context).size.height,
