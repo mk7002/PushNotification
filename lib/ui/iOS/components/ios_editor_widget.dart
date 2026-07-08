@@ -5,10 +5,10 @@ import 'package:provider/provider.dart';
 import 'package:pushapp/Singleton/app_provider.dart';
 import 'package:pushapp/extension/AppExtension.dart';
 import 'package:pushapp/provider/ios_provider.dart';
+import 'package:pushapp/ui/components/code_editor_field.dart';
+import 'package:pushapp/ui/components/collapsible_section.dart';
 import 'package:pushapp/ui/components/Utils.dart';
-import 'package:pushapp/ui/components/header_name_widget.dart';
 import 'package:pushapp/ui/res/strings.dart';
-import 'package:pushapp/ui/res/style_extensions.dart';
 
 import '../../android/components/ResultWidget.dart';
 import '../../components/custom_dropdown_widget.dart';
@@ -89,42 +89,61 @@ class _IosEditorWidgetState extends State<IosEditorWidget> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF8F9FA),
       body: SafeArea(
-        child: Container(
-          margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-          child: HeaderNameWidget(
-            label: "APNS Configuration",
-            child: Expanded(
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  children: [
-                    Expanded(
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _editView(),
-                            const SizedBox(height: 20),
-                            SizedBox(
-                                height: 100,
-                                child: ResultWidget(
-                                  isAndroid: false,
-                                )),
-                            const SizedBox(height: 100),
-                          ],
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                  child: Column(
+                    children: [
+                      // APNs Configuration - Expand/Collapse
+                      CollapsibleSection(
+                        title: "APNs Configuration",
+                        subtitle: "Push type, token & payload",
+                        leadingIcon: Icons.settings_outlined,
+                        accentColor: const Color(0xFF007AFF),
+                        initiallyExpanded: true,
+                        child: _editView(),
+                      ),
+
+                      // Result Section - Expand/Collapse
+                      CollapsibleSection(
+                        title: "Response",
+                        subtitle: "Push notification result",
+                        leadingIcon: Icons.terminal_rounded,
+                        accentColor: const Color(0xFF5856D6),
+                        initiallyExpanded: true,
+                        child: SizedBox(
+                          height: 140,
+                          child: ResultWidget(isAndroid: false),
                         ),
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: _buttons(),
+                    ],
+                  ),
+                ),
+              ),
+              // Action Buttons
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, -2),
                     ),
                   ],
                 ),
+                child: _buttons(),
               ),
-            ),
+            ],
           ),
         ),
       ),
@@ -147,7 +166,7 @@ class _IosEditorWidgetState extends State<IosEditorWidget> {
             }
           },
         ),
-        const SizedBox(height: 16.0),
+        const SizedBox(height: 14),
         CustomDropdown(
           label: 'APN Server',
           items: Strings.LIST_APNS_SERVER,
@@ -160,27 +179,27 @@ class _IosEditorWidgetState extends State<IosEditorWidget> {
             }
           },
         ),
-        const SizedBox(height: 16.0),
+        const SizedBox(height: 14),
         Utils().buildTextField(
           controller: _tokenController,
           label: 'Push Token',
           hint: 'Enter the Token',
           validator: Utils().requiredValidator('Please enter the Token'),
         ),
-        const SizedBox(height: 16.0),
-        Utils().buildTextField(
+        const SizedBox(height: 14),
+        CodeEditorField(
           controller: _headerController,
-          label: 'Custom Headers',
-          hint: 'Enter headers (key: value) per line',
-          minLines: 6,
+          label: 'Custom Headers (JSON)',
+          hint: '{\n  "apns-priority": "10"\n}',
+          minLines: 5,
           validator: Utils().requiredValidator('Please enter headers'),
         ),
-        const SizedBox(height: 16.0),
-        Utils().buildTextField(
+        const SizedBox(height: 14),
+        CodeEditorField(
           controller: _bodyController,
           label: 'Notification Body (JSON)',
-          hint: 'Enter the notification body in JSON format',
-          minLines: 6,
+          hint: '{\n  "aps": {\n    "alert": {\n      "title": "Hello",\n      "body": "World"\n    },\n    "sound": "default"\n  }\n}',
+          minLines: 8,
           validator: (value) {
             if (value == null || value.isEmpty) {
               return 'Please enter the notification body';
@@ -201,31 +220,41 @@ class _IosEditorWidgetState extends State<IosEditorWidget> {
     return Consumer<IosPlatformProvider>(
         builder: (context, appProvider, child) {
       return appProvider.privateKeyContent == null
-          ? const SizedBox()
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  "Import a .p8 key file to get started",
+                  style: TextStyle(color: Colors.grey[500]),
+                ),
+              ),
+            )
           : Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _buildButton(
-                  label: 'Format JSON',
+                _buildActionButton(
+                  label: 'Format',
+                  icon: Icons.code_rounded,
                   color: const Color(0xfff35049),
                   onPressed: () {
                     _formatJson(_headerController);
                     _formatJson(_bodyController);
                   },
                 ),
-                const SizedBox(width: 24),
-                _buildButton(
-                  label: 'Send APNS Message',
-                  color: const Color(0xff2a93ef),
+                const SizedBox(width: 12),
+                _buildActionButton(
+                  label: 'Send',
+                  icon: Icons.send_rounded,
+                  color: const Color(0xFF007AFF),
                   onPressed: () {
                     if (_formKey.currentState?.validate() ?? false) {
                       sendApnsMessage();
                     }
                   },
                 ),
-                const SizedBox(width: 24),
-                _buildButton(
-                  label: 'Save Template',
+                const SizedBox(width: 12),
+                _buildActionButton(
+                  label: 'Save',
+                  icon: Icons.save_rounded,
                   color: const Color(0xfffcab3d),
                   onPressed: () {
                     if (_formKey.currentState?.validate() ?? false) {
@@ -250,34 +279,29 @@ class _IosEditorWidgetState extends State<IosEditorWidget> {
     });
   }
 
-  Widget _buildButton({
+  Widget _buildActionButton({
     required String label,
+    required IconData icon,
     required Color color,
     required VoidCallback onPressed,
   }) {
     return Expanded(
-      child: ElevatedButton(
+      child: ElevatedButton.icon(
+        icon: Icon(icon, size: 18),
+        label: Text(
+          label,
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
         style: ElevatedButton.styleFrom(
           backgroundColor: color,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 14),
           shape: RoundedRectangleBorder(
-            borderRadius: 8.br,
+            borderRadius: BorderRadius.circular(10),
           ),
+          elevation: 0,
         ),
         onPressed: onPressed,
-        child: SizedBox(
-          height: 50,
-          child: Center(
-            child: Text(
-              label,
-              maxLines: 3,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        ),
       ),
     );
   }

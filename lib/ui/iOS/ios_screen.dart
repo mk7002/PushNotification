@@ -43,20 +43,42 @@ class _IosScreenWidgetState extends State<IosScreenWidget> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF8F9FA),
       appBar: CustomHeader(
         title: "iOS Push Tool",
-        desc: "Send test push notificaitons using ANPS",
-        showIcon: false,
+        desc: "Send test push notifications using APNs",
+        showIcon: true,
+        icon: Icons.apple_rounded,
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF007AFF), Color(0xFF5856D6)],
+        ),
+        shadowColor: const Color(0xFF007AFF).withOpacity(0.3),
       ),
       body: ResponsiveParentWidget(
         desktop: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Expanded(child: IosDataContainerWidget()),
+            const _PanelDivider(),
             Expanded(child: IosEditorWidget())
           ],
         ),
       ),
+    );
+  }
+}
+
+class _PanelDivider extends StatelessWidget {
+  const _PanelDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 1,
+      margin: const EdgeInsets.symmetric(vertical: 16),
+      color: const Color(0xFFE8E8E8),
     );
   }
 }

@@ -139,7 +139,7 @@ class IosPlatformProvider with ChangeNotifier {
         "name": "Sample Payload 2",
         "isDefaultPayload": true,
         "apn_server": "production",
-        "push_type": "background",
+        "push_type": "alert",
         "headers": {},
         "token": "token",
         "body": {

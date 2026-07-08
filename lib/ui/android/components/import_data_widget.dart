@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pushapp/data/DataHandler.dart';
 import 'package:pushapp/extension/AppExtension.dart';
-import 'package:pushapp/ui/components/AppButton.dart';
 import 'package:pushapp/ui/components/Utils.dart';
-import 'package:pushapp/ui/components/header_name_widget.dart';
 import 'package:pushapp/ui/res/colors.dart';
 import 'package:pushapp/utils/file_manager.dart';
 
@@ -75,74 +73,119 @@ class _ImportDataWidgetState extends State<ImportDataWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return HeaderNameWidget(
-      label: "Import Configurations",
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(child: _importButton(
+              icon: Icons.description_outlined,
+              label: "Service Account",
+              onTap: _importFile,
+              onInfo: () {
+                Utils().showJsonDialog(
+                    context, Utils().android_service_file_json);
+              },
+            )),
+            const SizedBox(width: 12),
+            Expanded(child: _importButton(
+              icon: Icons.file_copy_outlined,
+              label: "Template File",
+              onTap: _importTemplateFile,
+              onInfo: () {
+                Utils().showJsonDialog(
+                    context, Utils().sample_template_json);
+              },
+            )),
+          ],
+        ),
+        const SizedBox(height: 14),
+        Consumer<AndroidProvider>(builder: (context, appProvider, child) {
+          var projectId = "";
+          if (appProvider.isConfigFileLoaded) {
+            projectId = DataHandler().appConfig["project_id"];
+          }
+          return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              color: appProvider.isConfigFileLoaded
+                  ? COLOR_ANDROID_GREEN.withOpacity(0.08)
+                  : Colors.red.withOpacity(0.06),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  appProvider.isConfigFileLoaded
+                      ? Icons.check_circle_rounded
+                      : Icons.info_outline_rounded,
+                  size: 16,
+                  color: appProvider.isConfigFileLoaded
+                      ? COLOR_ANDROID_GREEN
+                      : Colors.red[400],
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    appProvider.isConfigFileLoaded
+                        ? "Project: $projectId"
+                        : "No service file loaded",
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: appProvider.isConfigFileLoaded
+                          ? COLOR_ANDROID_GREEN
+                          : Colors.red[400],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }),
+      ],
+    );
+  }
+
+  Widget _importButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    required VoidCallback onInfo,
+  }) {
+    return Material(
+      color: const Color(0xFFF5F5F5),
+      borderRadius: BorderRadius.circular(10),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(10),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          child: Row(
             children: [
+              Icon(icon, size: 20, color: Colors.grey[700]),
+              const SizedBox(width: 10),
               Expanded(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                        child: ConfigButton(
-                      label: "Import Android Service File",
-                      onPressed: () {
-                        _importFile();
-                      },
-                      onInfoPressed: () {
-                        Utils().showJsonDialog(
-                            context, Utils().android_service_file_json);
-                      },
-                    )),
-                  ],
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.grey[800],
+                  ),
                 ),
               ),
-              SizedBox(
-                width: 20,
-              ),
-              Expanded(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: ConfigButton(
-                          label: "Import Sample Template File",
-                          onInfoPressed: () {
-                            Utils().showJsonDialog(
-                                context, Utils().sample_template_json);
-                          },
-                          onPressed: () {
-                            _importTemplateFile();
-                          }),
-                    ),
-                  ],
+              GestureDetector(
+                onTap: onInfo,
+                child: Icon(
+                  Icons.info_outline_rounded,
+                  size: 18,
+                  color: Colors.grey[400],
                 ),
               ),
             ],
           ),
-          SizedBox(
-            height: 10,
-          ),
-          Consumer<AndroidProvider>(builder: (context, appProvider, child) {
-            var project_id = "";
-            if (appProvider.isConfigFileLoaded) {
-              project_id = DataHandler().appConfig["project_id"];
-            }
-            return !appProvider.isConfigFileLoaded
-                ? Text("No service file selected",
-                    style: TextStyle(
-                        color: Colors.red, fontWeight: FontWeight.w500))
-                : Text(
-                    "Service file loaded for project id : $project_id",
-                    style: TextStyle(
-                        color: COLOR_ANDROID_GREEN,
-                        fontWeight: FontWeight.w500),
-                  );
-          })
-        ],
+        ),
       ),
     );
   }

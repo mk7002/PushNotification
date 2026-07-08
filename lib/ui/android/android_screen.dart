@@ -46,23 +46,39 @@ class _AndroidScreenWidgetState extends State<AndroidScreenWidget> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF8F9FA),
       appBar: CustomHeader(
         title: "Android Push Tool",
-        desc: "Send test push notificaitons using FCM",
+        desc: "Send test push notifications using FCM",
       ),
       body: ResponsiveParentWidget(
         tablet: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
           const Expanded(child: DataHolderWidget()),
+          const _PanelDivider(),
           Expanded(child: EditorWidget()),
         ]),
         desktop: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Expanded(child: DataHolderWidget()),
+            const _PanelDivider(),
             Expanded(child: EditorWidget()),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _PanelDivider extends StatelessWidget {
+  const _PanelDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 1,
+      margin: const EdgeInsets.symmetric(vertical: 16),
+      color: const Color(0xFFE8E8E8),
     );
   }
 }

@@ -4,8 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pushapp/Singleton/app_provider.dart';
 import 'package:pushapp/extension/AppExtension.dart';
+import 'package:pushapp/ui/components/code_editor_field.dart';
+import 'package:pushapp/ui/components/collapsible_section.dart';
 import 'package:pushapp/ui/components/Utils.dart';
-import 'package:pushapp/ui/components/header_name_widget.dart';
 import 'package:pushapp/ui/res/style_extensions.dart';
 
 import '../../../data/DataHandler.dart';
@@ -79,10 +80,6 @@ class _EditorWidgetState extends State<EditorWidget> {
 
   @override
   void dispose() {
-    // Provider.of<AndroidProvider>(
-    //   context,
-    //   listen: false,
-    // ).addListeners(updateData, remove: true);
     _urlController.dispose();
     _headerController.dispose();
     _bodyController.dispose();
@@ -93,52 +90,64 @@ class _EditorWidgetState extends State<EditorWidget> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF8F9FA),
       body: SafeArea(
-        child: Container(
-          margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-          child: HeaderNameWidget(
-            label: "FCM Configuration",
-            child: Expanded(
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  children: [
-                    Expanded(
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _editView(),
-                            const SizedBox(height: 20),
-                            SizedBox(height: 100, child: ResultWidget()),
-                            const SizedBox(height: 100),
-                          ],
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                  child: Column(
+                    children: [
+                      // FCM Configuration - Expand/Collapse
+                      CollapsibleSection(
+                        title: "FCM Configuration",
+                        subtitle: "Endpoint, token & message body",
+                        leadingIcon: Icons.settings_outlined,
+                        accentColor: const Color(0xFF2a93ef),
+                        initiallyExpanded: true,
+                        child: _editView(),
+                      ),
+
+                      // Result Section - Expand/Collapse
+                      CollapsibleSection(
+                        title: "Response",
+                        subtitle: "Push notification result",
+                        leadingIcon: Icons.terminal_rounded,
+                        accentColor: const Color(0xFF6C63FF),
+                        initiallyExpanded: true,
+                        child: SizedBox(
+                          height: 140,
+                          child: ResultWidget(),
                         ),
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: _buttons(),
+                    ],
+                  ),
+                ),
+              ),
+              // Action Buttons
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, -2),
                     ),
                   ],
                 ),
+                child: _buttons(),
               ),
-            ),
+            ],
           ),
         ),
       ),
-      // bottomSheet: Material(
-      //   elevation: 20, // This adds the floating shadow
-      //   borderRadius: 20.br,
-      //   color: Colors.transparent, // Let child Container's color show through
-      //   child: Container(
-      //     margin: const EdgeInsets.only(bottom: 10),
-      //     decoration: BoxDecoration(color: Colors.white, borderRadius: 20.br),
-      //     padding: const EdgeInsets.all(20),
-      //     child: _buttons(),
-      //   ),
-      // ),
     );
   }
 
@@ -152,27 +161,27 @@ class _EditorWidgetState extends State<EditorWidget> {
           hint: 'Enter the URL of the FCM endpoint',
           validator: Utils().requiredValidator('Please enter the URL'),
         ),
-        const SizedBox(height: 16.0),
+        const SizedBox(height: 14),
         Utils().buildTextField(
           controller: _tokenController,
           label: 'Push Token',
           hint: 'Enter the Token',
           validator: Utils().requiredValidator('Please enter the Token'),
         ),
-        const SizedBox(height: 16.0),
-        Utils().buildTextField(
+        const SizedBox(height: 14),
+        CodeEditorField(
           controller: _headerController,
-          label: 'Custom Headers',
-          hint: 'Enter headers (key: value) per line',
-          minLines: 6,
+          label: 'Custom Headers (JSON)',
+          hint: '{\n  "key": "value"\n}',
+          minLines: 5,
           validator: Utils().requiredValidator('Please enter headers'),
         ),
-        const SizedBox(height: 16.0),
-        Utils().buildTextField(
+        const SizedBox(height: 14),
+        CodeEditorField(
           controller: _bodyController,
           label: 'Notification Body (JSON)',
-          hint: 'Enter the notification body in JSON format',
-          minLines: 6,
+          hint: '{\n  "message": {\n    "notification": {\n      "title": "Hello",\n      "body": "World"\n    }\n  }\n}',
+          minLines: 8,
           validator: (value) {
             if (value == null || value.isEmpty) {
               return 'Please enter the notification body';
@@ -192,21 +201,30 @@ class _EditorWidgetState extends State<EditorWidget> {
   Widget _buttons() {
     return Consumer<AndroidProvider>(builder: (context, appProvider, child) {
       return !appProvider.isConfigFileLoaded
-          ? const SizedBox()
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  "Import a service file to get started",
+                  style: TextStyle(color: Colors.grey[500]),
+                ),
+              ),
+            )
           : Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _buildButton(
-                  label: 'Format JSON',
+                _buildActionButton(
+                  label: 'Format',
+                  icon: Icons.code_rounded,
                   color: const Color(0xfff35049),
                   onPressed: () {
                     _formatJson(_headerController);
                     _formatJson(_bodyController);
                   },
                 ),
-                const SizedBox(width: 24),
-                _buildButton(
-                  label: 'Send FCM Message',
+                const SizedBox(width: 12),
+                _buildActionButton(
+                  label: 'Send',
+                  icon: Icons.send_rounded,
                   color: const Color(0xff2a93ef),
                   onPressed: () {
                     if (_formKey.currentState?.validate() ?? false) {
@@ -214,9 +232,10 @@ class _EditorWidgetState extends State<EditorWidget> {
                     }
                   },
                 ),
-                const SizedBox(width: 24),
-                _buildButton(
-                  label: 'Save Template',
+                const SizedBox(width: 12),
+                _buildActionButton(
+                  label: 'Save',
+                  icon: Icons.save_rounded,
                   color: const Color(0xfffcab3d),
                   onPressed: () {
                     if (_formKey.currentState?.validate() ?? false) {
@@ -238,34 +257,29 @@ class _EditorWidgetState extends State<EditorWidget> {
     });
   }
 
-  Widget _buildButton({
+  Widget _buildActionButton({
     required String label,
+    required IconData icon,
     required Color color,
     required VoidCallback onPressed,
   }) {
     return Expanded(
-      child: ElevatedButton(
+      child: ElevatedButton.icon(
+        icon: Icon(icon, size: 18),
+        label: Text(
+          label,
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
         style: ElevatedButton.styleFrom(
           backgroundColor: color,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 14),
           shape: RoundedRectangleBorder(
-            borderRadius: 8.br,
+            borderRadius: BorderRadius.circular(10),
           ),
+          elevation: 0,
         ),
         onPressed: onPressed,
-        child: SizedBox(
-          height: 50,
-          child: Center(
-            child: Text(
-              label,
-              maxLines: 3,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        ),
       ),
     );
   }

@@ -22,10 +22,38 @@ class MyApp extends StatelessWidget {
     return ProviderSetup(
       child: MaterialApp.router(
         routerConfig: globalRouter,
+        debugShowCheckedModeBanner: false,
         title: 'Notify Now v${Utils.versionCode}',
         theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: const Color(0xFF3DDC84),
+            brightness: Brightness.light,
+          ),
           useMaterial3: true,
+          scaffoldBackgroundColor: const Color(0xFFF8F9FA),
+          fontFamily: 'Inter',
+          inputDecorationTheme: InputDecorationTheme(
+            filled: true,
+            fillColor: const Color(0xFFF8F9FA),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: Color(0xFF3DDC84), width: 1.5),
+            ),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            labelStyle: TextStyle(
+              fontSize: 13,
+              color: Colors.grey[600],
+            ),
+          ),
         ),
       ),
     );

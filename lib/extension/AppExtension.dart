@@ -51,7 +51,7 @@ extension AppConfigExtension on Map<String, dynamic> {
 extension PayLoadData on Map<String, dynamic> {
   String getUrl() {
     try {
-      return this[Strings.URL];
+      return this[Strings.URL] ?? "";
     } catch (e) {
       return "";
     }
@@ -59,7 +59,7 @@ extension PayLoadData on Map<String, dynamic> {
 
   String token() {
     try {
-      return this[Strings.TOKEN];
+      return this[Strings.TOKEN] ?? "";
     } catch (e) {
       return "";
     }
@@ -67,19 +67,21 @@ extension PayLoadData on Map<String, dynamic> {
 
   String headers() {
     try {
-      return this[Strings.HEADERS] != null
-          ? jsonEncode(this[Strings.HEADERS])
-          : "";
+      final h = this[Strings.HEADERS];
+      if (h == null) return "{}";
+      return jsonEncode(h);
     } catch (e) {
-      return "$e";
+      return "{}";
     }
   }
 
   String body() {
     try {
-      return this[Strings.BODY] != null ? jsonEncode(this[Strings.BODY]) : "";
+      final b = this[Strings.BODY];
+      if (b == null) return "";
+      return jsonEncode(b);
     } catch (e) {
-      return "$e";
+      return "";
     }
   }
 

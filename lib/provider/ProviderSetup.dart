@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pushapp/provider/app_data_provider.dart';
+import 'package:pushapp/provider/profile_provider.dart';
 
 class ProviderSetup extends StatelessWidget {
   final Widget child;
@@ -12,6 +13,7 @@ class ProviderSetup extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => AppDataProvider()),
+        ChangeNotifierProvider(create: (context) => ProfileProvider()..loadProfiles()),
       ],
       child: child,
     );

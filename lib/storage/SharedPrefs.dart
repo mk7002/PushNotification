@@ -12,6 +12,9 @@ class SharedPrefs {
   static final SharedPrefs _instance = SharedPrefs._internal();
   static SharedPreferences? _preferences;
 
+  /// The currently active profile ID. When set, all reads/writes are scoped to this profile.
+  static String? activeProfileId;
+
   // Private constructor
   SharedPrefs._internal();
 
@@ -93,7 +96,11 @@ class SharedPrefs {
   }
 
   String _getKey(bool isAndroid, String suffix) {
-    return "${isAndroid ? androidPrefix : iosPrefix}.$suffix";
+    final platformPrefix = isAndroid ? androidPrefix : iosPrefix;
+    if (activeProfileId != null) {
+      return "profile_${activeProfileId!}.$platformPrefix.$suffix";
+    }
+    return "$platformPrefix.$suffix";
   }
 
   Future<Map<String, dynamic>?> configData({
